@@ -33,15 +33,43 @@ export function VideoRedaction() {
     }
   };
 
-  const handleRedact = () => {
-    if (!file) return;
+  const handleRedact = async () => {
+    if (!file) return;  // Ensure a file is selected
     
-    setIsProcessing(true);
-    
-    setTimeout(() => {
-      setIsProcessing(false);
-    }, 2000);
-  };
+    setIsProcessing(true);  // Indicate processing start
+
+    // Create FormData to send the video file in the request
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        // Send the file to the FastAPI backend using fetch
+        const response = await fetch("http://localhost:8000/redact-video/", {
+            method: "POST",
+            body: formData,
+        });
+
+        // Handle the response
+        if (response.ok) {
+            // Get the video blob from the response
+            const blob = await response.blob();
+            
+            // Create a download link for the video
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `redacted_${file.name}`;  // Modify the filename if needed
+            link.click();  // Trigger the download
+        } else {
+            alert("Failed to process the video.");
+        }
+    } catch (error) {
+        console.error("Error uploading the video:", error);
+        alert("Error uploading the video.");
+    } finally {
+        setIsProcessing(false);  // Indicate processing complete
+    }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4">

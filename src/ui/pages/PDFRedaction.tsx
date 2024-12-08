@@ -28,14 +28,38 @@ export function PDFRedaction() {
     }
   };
 
-  const handleRedact = () => {
+  const handleRedact = async () => {
     if (!file) return;
-    
+
     setIsProcessing(true);
-    
-    setTimeout(() => {
+
+    // Create FormData to send the file and any additional data (redaction level)
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("redaction_level", "1");  // Set redaction level here (e.g., 1)
+
+    try {
+      const response = await fetch("http://localhost:8000/redact-pdf/", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Handle response when the PDF is redacted
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `redacted_${file.name}`;
+        link.click();
+      } else {
+        alert("Failed to redact PDF");
+      }
+    } catch (error) {
+      console.error("Error redacting PDF:", error);
+      alert("Error redacting PDF");
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+    }
   };
 
   return (

@@ -50,6 +50,25 @@ function Home() {
       description: 'View your last 25 redaction operations',
       path: '/history',
     },
+    {
+      icon: FileUp,
+      title: 'XML File Redaction',
+      description: 'Upload and redact xml files',
+      path: '/xml-redaction',
+    },
+    {
+      icon: FileUp,
+      title: 'JSON File Redaction',
+      description: 'Upload and redact json files',
+      path: '/json-redaction',
+    },
+    {
+      icon: FileUp,
+      title: 'CSV File Redaction',
+      description: 'Upload and redact csv files',
+      path: '/csv-redaction',
+    },
+
   ];
 
   const handleLogout = () => {

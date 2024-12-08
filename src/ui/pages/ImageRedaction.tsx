@@ -33,15 +33,43 @@ export function ImageRedaction() {
     }
   };
 
-  const handleRedact = () => {
-    if (!file) return;
+  const handleRedact = async () => {
+    if (!file) return;  // Ensure a file is selected
     
-    setIsProcessing(true);
-    
-    setTimeout(() => {
-      setIsProcessing(false);
-    }, 2000);
-  };
+    setIsProcessing(true);  // Indicate processing start
+
+    // Create FormData to send the file in the request
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        // Send the file to the FastAPI backend using fetch
+        const response = await fetch("http://localhost:8000/redact-image/", {
+            method: "POST",
+            body: formData,
+        });
+
+        // Handle the response
+        if (response.ok) {
+            // Get the image blob from the response
+            const blob = await response.blob();
+            
+            // Create a download link for the image
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `redacted_${file.name}`;  // Modify the filename if needed
+            link.click();  // Trigger the download
+        } else {
+            alert("Failed to process the image.");
+        }
+    } catch (error) {
+        console.error("Error uploading the image:", error);
+        alert("Error uploading the image.");
+    } finally {
+        setIsProcessing(false);  // Indicate processing complete
+    }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4">
