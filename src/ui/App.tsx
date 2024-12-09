@@ -9,6 +9,9 @@ import { FileRedaction } from './pages/FileRedaction';
 import { PDFRedaction } from './pages/PDFRedaction';
 import { ImageRedaction } from './pages/ImageRedaction';
 import { VideoRedaction } from './pages/VideoRedaction';
+import { CsvRedaction } from './pages/CsvRedaction';
+import { JsonRedaction } from './pages/JsonRedaction';
+import { XmlRedaction } from './pages/XmlRedaction';
 import { useThemeStore } from './store/theme';
 
 function Home() {
@@ -122,6 +125,9 @@ function App() {
             <Route path="/pdf-redaction" element={<PDFRedaction />} />
             <Route path="/image-redaction" element={<ImageRedaction />} />
             <Route path="/video-redaction" element={<VideoRedaction />} />
+            <Route path="/csv-redaction" element={<CsvRedaction />} />
+            <Route path="/json-redaction" element={<JsonRedaction />} />
+            <Route path="/xml-redaction" element={<XmlRedaction />} />
           </Routes>
         </div>
       </div>
