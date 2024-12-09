@@ -6,6 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from io import BytesIO
 import PyPDF2
+import regex as reg
 
 
 app = FastAPI()
@@ -39,11 +40,11 @@ async def redact_text(request: RedactRequest):
     try:
         redacted_text = request.text
         if request.redaction_level == 1:
-            redacted_text = ''.join('*' if c in 'aeiouAEIOU' else c for c in redacted_text)
+            redacted_text = reg.redact_all(request.text)
         elif request.redaction_level == 2:
-            redacted_text = ''.join('*' if c.isalpha() else c for c in redacted_text)
+            redacted_text = reg.redact_all(request.text)
         else:
-            redacted_text = "Soumi r Dhritishree r gar mara hobe"
+            redacted_text = reg.redact_all(request.text)
 
         return {"redactedText": redacted_text}
     except Exception as e:
