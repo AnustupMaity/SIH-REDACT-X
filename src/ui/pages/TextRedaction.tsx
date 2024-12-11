@@ -3,6 +3,9 @@ import { Download } from 'lucide-react';
 import { Slider } from '../components/Slider';
 import { BackButton } from '../components/BackButton';
 import { cn } from '../lib/utils';
+import { saveAs } from 'file-saver';  // You can use this to simplify file downloading
+import { jsPDF } from 'jspdf';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 
 export function TextRedaction() {
   const [inputText, setInputText] = useState('');
@@ -39,7 +42,8 @@ export function TextRedaction() {
       }
   
       const data = await response.json();
-      setOutputText(data.redactedText || 'Error: No redacted text returned');
+      console.log(data);
+      setOutputText(data.redacted_text || 'Error: No redacted text returned');
     } catch (error) {
       console.error(error);
       setOutputText('An error occurred while processing the text');
@@ -55,17 +59,46 @@ export function TextRedaction() {
   };
 
   const handleDownload = (format: 'txt' | 'docx' | 'pdf') => {
-    
-    const blob = new Blob([outputText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `redacted-text.${format}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setShowDownloadOptions(false);
+    if (format === 'txt') {
+      // For txt download
+      const blob = new Blob([outputText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `redacted-text.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setShowDownloadOptions(false);
+    } else if (format === 'docx') {
+      // For docx download using docx library
+      const doc = new Document({
+        sections: [
+          {
+            properties: {},
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun(outputText),
+                ],
+              }),
+            ],
+          },
+        ],
+      });
+  
+      Packer.toBlob(doc).then((blob) => {
+        saveAs(blob, `redacted-text.${format}`);
+      });
+      setShowDownloadOptions(false);
+    } else if (format === 'pdf') {
+      // For pdf download using jsPDF
+      const doc = new jsPDF();
+      doc.text(outputText, 10, 10);
+      doc.save(`redacted-text.${format}`);
+      setShowDownloadOptions(false);
+    }
   };
 
   return (

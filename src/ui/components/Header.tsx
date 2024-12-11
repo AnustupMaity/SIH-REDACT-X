@@ -25,7 +25,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           onClick={() => (window.location.href = '/#/')}
           className="text-xl font-bold"
         >
-          Redaction Tool
+          Redact-X
         </button>
         
       </div>

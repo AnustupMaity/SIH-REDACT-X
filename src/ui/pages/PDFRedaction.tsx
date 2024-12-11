@@ -75,7 +75,7 @@ export function PDFRedaction() {
               <Upload className="w-12 h-12 text-gray-400 mb-4" />
               <label className="cursor-pointer">
                 <span className="text-blue-500 hover:text-blue-600">
-                  Click to upload PDF
+                  Click to upload document
                 </span>
                 <input
                   type="file"
@@ -85,7 +85,7 @@ export function PDFRedaction() {
                 />
               </label>
               <p className="text-sm text-gray-500 mt-2">
-                Supported format: PDF
+                Supported format: TXT,PDF,JPG,PNG,LOG,DOC,DOCX,CSV,XLSX
               </p>
             </div>
           </div>

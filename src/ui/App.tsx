@@ -12,6 +12,8 @@ import { VideoRedaction } from './pages/VideoRedaction';
 import { CsvRedaction } from './pages/CsvRedaction';
 import { JsonRedaction } from './pages/JsonRedaction';
 import { XmlRedaction } from './pages/XmlRedaction';
+import RegisterPage from './pages/Register';
+import LoginPage from './pages/Login';
 import { useThemeStore } from './store/theme';
 
 function Home() {
@@ -25,27 +27,9 @@ function Home() {
     },
     {
       icon: FileUp,
-      title: 'Text File Redaction',
-      description: 'Upload and redact text files',
-      path: '/file-redaction',
-    },
-    {
-      icon: FileUp,
-      title: 'PDF Redaction',
-      description: 'Redact sensitive information from PDF documents',
+      title: 'File Redaction',
+      description: 'Redact sensitive information from any document of any extension',
       path: '/pdf-redaction',
-    },
-    {
-      icon: Image,
-      title: 'Image Redaction',
-      description: 'Redact sensitive information from images',
-      path: '/image-redaction',
-    },
-    {
-      icon: Video,
-      title: 'Video Redaction',
-      description: 'Redact sensitive information from videos',
-      path: '/video-redaction',
     },
     {
       icon: Clock,
@@ -53,30 +37,10 @@ function Home() {
       description: 'View your last 25 redaction operations',
       path: '/history',
     },
-    {
-      icon: FileUp,
-      title: 'XML File Redaction',
-      description: 'Upload and redact xml files',
-      path: '/xml-redaction',
-    },
-    {
-      icon: FileUp,
-      title: 'JSON File Redaction',
-      description: 'Upload and redact json files',
-      path: '/json-redaction',
-    },
-    {
-      icon: FileUp,
-      title: 'CSV File Redaction',
-      description: 'Upload and redact csv files',
-      path: '/csv-redaction',
-    },
-
   ];
 
   const handleLogout = () => {
-    
-    navigate('/');
+    navigate('/login');
   };
 
   return (
@@ -91,8 +55,8 @@ function Home() {
           <span>Logout</span>
         </button>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
         {redactionOptions.map((option) => (
           <RedactionCard
             key={option.title}
@@ -115,19 +79,103 @@ function App() {
     <HashRouter>
       <div className={theme}>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-          <Header onMenuClick={() => setIsSidebarOpen(true)} />
-          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-          
+          {/* Conditionally render Header and Sidebar only if the current path is not '/login' */}
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/text-redaction" element={<TextRedaction />} />
-            <Route path="/file-redaction" element={<FileRedaction />} />
-            <Route path="/pdf-redaction" element={<PDFRedaction />} />
-            <Route path="/image-redaction" element={<ImageRedaction />} />
-            <Route path="/video-redaction" element={<VideoRedaction />} />
-            <Route path="/csv-redaction" element={<CsvRedaction />} />
-            <Route path="/json-redaction" element={<JsonRedaction />} />
-            <Route path="/xml-redaction" element={<XmlRedaction />} />
+            <Route
+              path="/"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <Home />
+                </>
+              }
+            />
+            <Route
+              path="/text-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <TextRedaction />
+                </>
+              }
+            />
+            <Route
+              path="/file-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <FileRedaction />
+                </>
+              }
+            />
+            <Route
+              path="/pdf-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <PDFRedaction />
+                </>
+              }
+            />
+            <Route
+              path="/image-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <ImageRedaction />
+                </>
+              }
+            />
+            <Route
+              path="/video-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <VideoRedaction />
+                </>
+              }
+            />
+            <Route
+              path="/csv-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <CsvRedaction />
+                </>
+              }
+            />
+            <Route
+              path="/json-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <JsonRedaction />
+                </>
+              }
+            />
+            <Route
+              path="/xml-redaction"
+              element={
+                <>
+                  <Header onMenuClick={() => setIsSidebarOpen(true)} />
+                  <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                  <XmlRedaction />
+                </>
+              }
+            />
+            {/* Login page without Header or Sidebar */}
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* Register page without Header or Sidebar */}
+            <Route path="/register" element={<RegisterPage />} />
           </Routes>
         </div>
       </div>
@@ -136,3 +184,6 @@ function App() {
 }
 
 export default App;
+
+
+
