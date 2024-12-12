@@ -37,6 +37,7 @@ export function PDFRedaction() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("redaction_level", "1");  // Set redaction level here (e.g., 1)
+    console.log(formData);
 
     try {
       const response = await fetch("http://localhost:8000/redact-pdf/", {
@@ -67,7 +68,7 @@ export function PDFRedaction() {
       <div className="mt-[60px] max-w-4xl mx-auto">
         <BackButton />
 
-        <h1 className="text-2xl font-bold mb-6">PDF Redaction</h1>
+        <h1 className="text-2xl font-bold mb-6">File Redaction</h1>
 
         <div className="space-y-6">
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8">
@@ -118,7 +119,7 @@ export function PDFRedaction() {
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
               >
-                {isProcessing ? 'Processing...' : 'Redact PDF'}
+                {isProcessing ? 'Processing...' : 'Redact File'}
               </button>
             </>
           )}
