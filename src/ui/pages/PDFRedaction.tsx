@@ -30,21 +30,21 @@ export function PDFRedaction() {
 
   const handleRedact = async () => {
     if (!file) return;
-
+  
     setIsProcessing(true);
-
+  
     // Create FormData to send the file and any additional data (redaction level)
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("redaction_level", "1");  // Set redaction level here (e.g., 1)
+    formData.append("redaction_level", redactionLevel[0].toString()); // Include the selected redaction level
     console.log(formData);
-
+  
     try {
       const response = await fetch("http://localhost:8000/redact-pdf/", {
         method: "POST",
         body: formData,
       });
-
+  
       if (response.ok) {
         // Handle response when the PDF is redacted
         const blob = await response.blob();
@@ -62,6 +62,7 @@ export function PDFRedaction() {
       setIsProcessing(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4">

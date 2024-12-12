@@ -1,5 +1,5 @@
 from PyPDF2 import PdfReader
-from fastapi import FastAPI, Request, status, File, UploadFile, HTTPException
+from fastapi import FastAPI, Request, status, File, UploadFile, HTTPException, Form
 from pydantic import BaseModel, Field, validator
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -212,7 +212,7 @@ async def redact_text(request: dict):
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @app.post("/redact-pdf/")
-async def redact_pdf(file: UploadFile = File(...)):
+async def redact_pdf(file: UploadFile = File(...),redaction_level: int = Form(...)):
     """
     Endpoint to redact sensitive data from a PDF file and return the redacted PDF.
     """
@@ -233,22 +233,22 @@ async def redact_pdf(file: UploadFile = File(...)):
         file_data = await file.read()
 
         if content_type == "application/pdf":
-            return await handle_pdf(file_data, file.filename)
+            return await handle_pdf(file_data, file.filename, redaction_level)
 
         elif content_type == "text/plain":
-            return handle_txt(file_data, file.filename)
+            return handle_txt(file_data, file.filename, redaction_level)
 
         elif content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            return handle_docx(file_data, file.filename)
+            return handle_docx(file_data, file.filename, redaction_level)
 
         elif content_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-            return handle_pptx(file_data, file.filename)
+            return handle_pptx(file_data, file.filename, redaction_level)
         
         elif content_type == "text/csv":
-            return handle_csv(file_data, file.filename)
+            return handle_csv(file_data, file.filename, redaction_level)
 
         elif content_type == "application/octet-stream":  # Assuming logs are octet-stream
-            return handle_log(file_data, file.filename)
+            return handle_log(file_data, file.filename, redaction_level)
 
     except HTTPException as http_err:
         raise http_err
@@ -259,28 +259,49 @@ async def redact_pdf(file: UploadFile = File(...)):
             detail=f"An unexpected error occurred: {str(e)}"
         )
 
-async def handle_pdf(file_data, filename):
+
+async def handle_pdf(file_data, filename, redaction_level):
     try:
         pdf_file = BytesIO(file_data)
         reader = PdfReader(pdf_file)
         _ = reader.pages[0]
         pdf_file.seek(0)
 
-        # Convert PDF to images
         POPPLER_PATH = r"C:\Users\User\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin"
-        images = convert_from_bytes(pdf_file.read(), poppler_path=POPPLER_PATH)
+
+        # Convert PDF to images
+        try:
+            images = convert_from_bytes(pdf_file.read(), poppler_path=POPPLER_PATH)
+        except Exception as poppler_error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error converting PDF to images. Ensure Poppler is installed and configured correctly. {str(poppler_error)}"
+            )
 
         redacted_images = []
         for image in images:
+            if redaction_level == 0:
+                # Level 0: No redaction
+                redacted_images.append(image)
+                continue
+
             ocr_text = pytesseract.image_to_string(image)
-            redacted_text = redact_all(redact_entities(ocr_text))
+            if redaction_level in {1, 3}:
+                # Level 1 or 3: Apply regex-based redaction
+                ocr_text = redact_all(ocr_text)
+
+            if redaction_level in {2, 3}:
+                # Level 2 or 3: Apply NER-based redaction
+                ocr_text = redact_entities(ocr_text)
 
             draw = ImageDraw.Draw(image)
             tsv_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DATAFRAME)
             for _, row in tsv_data.iterrows():
                 text = row.get("text", "")
                 if isinstance(text, str) and text.strip():
-                    redacted_word = redact_all(redact_entities(text))
+                    redacted_word = redact_all(redact_entities(text)) if redaction_level == 3 else (
+                        redact_all(text) if redaction_level == 1 else redact_entities(text)
+                    )
                     if redacted_word != text:
                         left, top, width, height = int(row['left']), int(row['top']), int(row['width']), int(row['height'])
                         draw.rectangle([left, top, left + width, top + height], fill="black")
@@ -305,12 +326,15 @@ async def handle_pdf(file_data, filename):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing PDF: {str(e)}")
 
-
-def handle_txt(file_data, filename):
+def handle_txt(file_data, filename, redaction_level):
     try:
-        text = file_data.decode("utf-8",errors="replace")
-        redacted_text = redact_all(redact_entities(text))
-        output_file = BytesIO(redacted_text.encode("utf-8"))
+        text = file_data.decode("utf-8", errors="replace")
+        if redaction_level in {1, 3}:
+            text = redact_all(text)
+        if redaction_level in {2, 3}:
+            text = redact_entities(text)
+
+        output_file = BytesIO(text.encode("utf-8"))
 
         return StreamingResponse(
             output_file,
@@ -321,11 +345,14 @@ def handle_txt(file_data, filename):
         raise HTTPException(status_code=500, detail=f"Error processing TXT file: {str(e)}")
 
 
-def handle_docx(file_data, filename):
+def handle_docx(file_data, filename, redaction_level):
     try:
         doc = Document(BytesIO(file_data))
         for paragraph in doc.paragraphs:
-            paragraph.text = redact_all(redact_entities(paragraph.text))
+            if redaction_level in {1, 3}:
+                paragraph.text = redact_all(paragraph.text)
+            if redaction_level in {2, 3}:
+                paragraph.text = redact_entities(paragraph.text)
 
         output_docx = BytesIO()
         doc.save(output_docx)
@@ -340,7 +367,7 @@ def handle_docx(file_data, filename):
         raise HTTPException(status_code=500, detail=f"Error processing DOCX file: {str(e)}")
 
 
-def handle_pptx(file_data, filename):
+def handle_pptx(file_data, filename, redaction_level):
     try:
         presentation = Presentation(BytesIO(file_data))
         for slide in presentation.slides:
@@ -348,7 +375,10 @@ def handle_pptx(file_data, filename):
                 if shape.has_text_frame:
                     for paragraph in shape.text_frame.paragraphs:
                         for run in paragraph.runs:
-                            run.text = redact_all(redact_entities(run.text))
+                            if redaction_level in {1, 3}:
+                                run.text = redact_all(run.text)
+                            if redaction_level in {2, 3}:
+                                run.text = redact_entities(run.text)
 
         output_pptx = BytesIO()
         presentation.save(output_pptx)
@@ -363,35 +393,20 @@ def handle_pptx(file_data, filename):
         raise HTTPException(status_code=500, detail=f"Error processing PPTX file: {str(e)}")
 
 
-def handle_log(file_data, filename):
+def handle_csv(file_data, filename, redaction_level):
     try:
-        text = file_data.decode("utf-8")
-        redacted_text = redact_all(redact_entities(text))
-        output_file = BytesIO(redacted_text.encode("utf-8"))
-
-        return StreamingResponse(
-            output_file,
-            media_type="text/plain",
-            headers={"Content-Disposition": f"attachment; filename=redacted_{filename}"}
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing LOG file: {str(e)}")
-    
-
-def handle_csv(file_data, filename):
-    try:
-        # Read CSV content into a Pandas DataFrame
         data = pd.read_csv(BytesIO(file_data), encoding="utf-8", errors="replace")
 
-        # Redact sensitive data in all cells
         def redact_cell(cell):
             if isinstance(cell, str):
-                return redact_all(redact_entities(cell))
+                if redaction_level in {1, 3}:
+                    cell = redact_all(cell)
+                if redaction_level in {2, 3}:
+                    cell = redact_entities(cell)
             return cell
 
         redacted_data = data.applymap(redact_cell)
 
-        # Write the redacted DataFrame to a buffer
         output_csv = BytesIO()
         redacted_data.to_csv(output_csv, index=False, encoding="utf-8")
         output_csv.seek(0)
@@ -403,6 +418,25 @@ def handle_csv(file_data, filename):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing CSV file: {str(e)}")
+
+
+def handle_log(file_data, filename, redaction_level):
+    try:
+        text = file_data.decode("utf-8")
+        if redaction_level in {1, 3}:
+            text = redact_all(text)
+        if redaction_level in {2, 3}:
+            text = redact_entities(text)
+
+        output_file = BytesIO(text.encode("utf-8"))
+
+        return StreamingResponse(
+            output_file,
+            media_type="text/plain",
+            headers={"Content-Disposition": f"attachment; filename=redacted_{filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing LOG file: {str(e)}")
 
 
 
