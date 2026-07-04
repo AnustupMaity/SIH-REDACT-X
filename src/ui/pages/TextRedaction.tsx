@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Download, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, Layers, AlertTriangle, Terminal, Play } from 'lucide-react';
+import { useState } from 'react';
+import { Download, Zap, RefreshCw, FileText, Layers } from 'lucide-react';
 import { Slider } from '../components/Slider';
 import { BackButton } from '../components/BackButton';
 import { cn } from '../lib/utils';
