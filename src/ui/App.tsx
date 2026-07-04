@@ -76,7 +76,7 @@ function Home() {
       {/* Hero Welcome Banner */}
       <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-md p-8 rounded-sm mb-10 shadow-2xl relative overflow-hidden group hover:border-slate-700 transition-all">
         <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-red-600/10 rounded-full blur-2xl group-hover:bg-red-600/20 transition-all pointer-events-none" />
-        
+
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-red-950/60 border border-red-500/30 text-red-400 text-xs font-mono font-bold tracking-wider uppercase">
@@ -84,7 +84,7 @@ function Home() {
               <span>Security Console Active</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight font-sans">
-              Welcome to <span className="text-red-500 underline decoration-red-600/50 underline-offset-4">RE-DACT</span> Studio
+              Welcome to <span className="text-red-500 underline decoration-red-600/50 underline-offset-4">RE-DACT</span>
             </h1>
             <p className="text-sm text-slate-400 max-w-2xl leading-relaxed">
               Your localized workspace for stripping sensitive personal identifiers, Indian regulatory numbers, and financial data using advanced offline NLP and synthetic anonymization.
@@ -104,11 +104,11 @@ function Home() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800/80 font-mono text-xs">
           <div className="flex items-center gap-2.5 text-slate-300">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="font-bold">100% Offline AI</span>
+            <span className="font-bold">100% Offline </span>
           </div>
           <div className="flex items-center gap-2.5 text-slate-300">
             <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
-            <span>2.14 Lakh Trained Corpus</span>
+            <span>Trained and Finetuned Models</span>
           </div>
           <div className="flex items-center gap-2.5 text-slate-300">
             <Lock className="w-4 h-4 text-red-400 shrink-0" />

@@ -50,15 +50,6 @@ export function AboutUs() {
           ))}
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 p-6 rounded-sm flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-white">Compliance & Security Benchmarks</h3>
-            <p className="text-xs text-gray-400 mt-1">Architected in accordance with secure coding practices, GDPR, HIPAA, and Indian DPDP Act standards.</p>
-          </div>
-          <span className="px-3 py-1 bg-emerald-950/50 border border-emerald-800 text-emerald-400 font-mono text-xs rounded-sm">
-            Verified Safe
-          </span>
-        </div>
       </div>
     </main>
   );
