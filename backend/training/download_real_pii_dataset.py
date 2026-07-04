@@ -28,52 +28,61 @@ CONLL_MAP = {
     8: "I-MISC"
 }
 
-def load_real_hf_dataset(max_samples=10000):
+def load_real_hf_dataset(max_samples=200000):
     """
-    Download real-world NER benchmark dataset (Babelscape/wikineural) from Hugging Face Hub using streaming.
-    No API credentials needed! Works instantly without downloading multi-GB archives to disk.
+    Download real-world NER benchmark datasets from Hugging Face Hub.
+    Uses fast Parquet/Arrow downloading without streaming to load up to 2 Lakh (200,000+) real records in seconds!
     """
-    logger.info(f"Streaming up to {max_samples} real NER sentences from 'Babelscape/wikineural' on Hugging Face Hub...")
+    logger.info(f"Downloading up to {max_samples:,} real NER sentences from 'Babelscape/wikineural' on Hugging Face Hub...")
+    real_records = []
     try:
         from datasets import load_dataset
-        dataset = load_dataset("Babelscape/wikineural", split="train_en", streaming=True)
+        splits = ["train_en", "train_es", "train_de", "train_fr", "val_en", "test_en"]
         
-        real_records = []
-        count = 0
-        for row in dataset:
-            if count >= max_samples:
+        for split_name in splits:
+            if len(real_records) >= max_samples:
                 break
-            tokens = row.get("tokens", [])
-            tags_int = row.get("ner_tags", [])
-            if not tokens or not tags_int or len(tokens) != len(tags_int):
-                continue
+            logger.info(f"Fast-loading Parquet split: {split_name}...")
+            try:
+                ds_wiki = load_dataset("Babelscape/wikineural", split=split_name)
+                logger.info(f"Loaded {len(ds_wiki):,} rows from {split_name}! Formatting...")
                 
-            tags_str = [CONLL_MAP.get(t, "O") for t in tags_int]
-            text = " ".join(tokens)
-            
-            # Generate character spans for spaCy / fallback
-            spacy_ents = []
-            curr_idx = 0
-            for tok, tag in zip(tokens, tags_str):
-                start = text.find(tok, curr_idx)
-                if start != -1:
-                    end = start + len(tok)
-                    curr_idx = end
-                    if tag.startswith("B-") or tag.startswith("I-"):
-                        ent_type = tag.split("-")[1]
-                        if ent_type != "MISC":
-                            spacy_ents.append([start, end, ent_type])
-                            
-            real_records.append({
-                "text": text,
-                "tokens": tokens,
-                "ner_tags": tags_str,
-                "spacy_entities": spacy_ents,
-                "source": "huggingface_real_wikineural"
-            })
-            count += 1
-            
-        logger.info(f"Successfully streamed and processed {len(real_records)} real NER records!")
+                for i in range(len(ds_wiki)):
+                    if len(real_records) >= max_samples:
+                        break
+                    row = ds_wiki[i]
+                    tokens = row.get("tokens", [])
+                    tags_int = row.get("ner_tags", [])
+                    if not tokens or not tags_int or len(tokens) != len(tags_int):
+                        continue
+                        
+                    tags_str = [CONLL_MAP.get(t, "O") for t in tags_int]
+                    text = " ".join(tokens)
+                    
+                    spacy_ents = []
+                    curr_idx = 0
+                    for tok, tag in zip(tokens, tags_str):
+                        start = text.find(tok, curr_idx)
+                        if start != -1:
+                            end = start + len(tok)
+                            curr_idx = end
+                            if tag.startswith("B-") or tag.startswith("I-"):
+                                ent_type = tag.split("-")[1]
+                                if ent_type != "MISC":
+                                    spacy_ents.append([start, end, ent_type])
+                                    
+                    real_records.append({
+                        "text": text,
+                        "tokens": tokens,
+                        "ner_tags": tags_str,
+                        "spacy_entities": spacy_ents,
+                        "source": f"huggingface_real_wikineural_{split_name}"
+                    })
+                logger.info(f"Total real records collected so far: {len(real_records):,}")
+            except Exception as sp_err:
+                logger.warning(f"Could not load split {split_name}: {sp_err}")
+                
+        logger.info(f"Successfully collected {len(real_records):,} real NER records!")
         return real_records
     except Exception as e:
         logger.error(f"Could not download dataset from HuggingFace: {e}")

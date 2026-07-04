@@ -8,43 +8,62 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 export default defineConfig({
   plugins: [
     electron(),
-    react(),viteStaticCopy({
+    react(),
+    viteStaticCopy({
       targets: [
         { src: 'public/*', dest: '' },
       ],
     }),
     VitePWA({
-      registerType: 'autoUpdate', // Automatically updates the service worker
+      registerType: 'autoUpdate',
       manifest: {
-        name: 'RedactX', // Replace with your app name
-        short_name: 'RedactX-1.0', // Replace with a shorter name
-        description: 'NLP based auto redaction tool', // Replace with a brief app description
-        theme_color: '#ffffff', // Background color for the app's title bar
-        background_color: '#61DBFB', // Background color for the app's splash screen
-        display: 'standalone', // Makes it look like a native app
-              icons: [
-                {
-                  src: '/icon1.png',
-                  sizes: '192x192',
-                  type: 'image/png',
-                },
-                {
-                  src: '/icon1.png',
-                  sizes: '512x512',
-                  type: 'image/png',
-                },
-                {
-                  src: '/icon1.png',
-                  sizes: '512x512',
-                  type: 'image/png',
-                  purpose: 'any maskable', // Maskable icon for Android devices
-                },
-              ],
-            },
-          }),
+        name: 'RedactX',
+        short_name: 'RedactX-2.0',
+        description: 'NLP based auto redaction tool',
+        theme_color: '#ffffff',
+        background_color: '#61DBFB',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/icon1.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/icon1.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: '/icon1.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
         ],
-        base:'./',
-        build:{
-          outDir: 'dist-react'
-        }
-      });
+      },
+    }),
+  ],
+  base: './',
+  build: {
+    outDir: 'dist-react',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('docx') || id.includes('jspdf') || id.includes('file-saver')) {
+              return 'office-vendor';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons-vendor';
+            }
+            return 'vendor';
+          }
+        },
+      },
+    },
+  },
+});

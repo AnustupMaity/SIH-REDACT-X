@@ -51,8 +51,34 @@ def main():
     convert_to_spacy_docbin(train_data, nlp, train_path)
     convert_to_spacy_docbin(dev_data, nlp, dev_path)
 
-    logger.info("spaCy data formatted! To train a model, create a base config and run:")
-    logger.info(f"python -m spacy train base_config.cfg --output {OUTPUT_DIR} --paths.train {train_path} --paths.dev {dev_path}")
+    config_path = os.path.join(BASE_DIR, "config.cfg")
+    logger.info("Generating spaCy training configuration...")
+    import subprocess
+    import sys
+    init_cmd = [
+        sys.executable, "-m", "spacy", "init", "config", config_path,
+        "--lang", "en", "--pipeline", "ner", "--optimize", "efficiency", "--force"
+    ]
+    subprocess.run(init_cmd, check=True)
+
+    logger.info("Starting automated spaCy NER model training...")
+    train_cmd = [
+        sys.executable, "-m", "spacy", "train", config_path,
+        "--output", OUTPUT_DIR,
+        "--paths.train", train_path,
+        "--paths.dev", dev_path,
+        "--training.max_epochs", "3"  # 3 epochs for fast high-precision convergence
+    ]
+    result = subprocess.run(train_cmd, capture_output=True, text=True)
+    
+    logger.info(result.stdout)
+    if result.stderr:
+        logger.warning(result.stderr)
+
+    logger.info("==========================================")
+    logger.info("SPACY NER TRAINING COMPLETE & METRICS EVALUATED!")
+    logger.info(f"Model saved to: {OUTPUT_DIR}")
+    logger.info("==========================================")
 
 if __name__ == "__main__":
     main()

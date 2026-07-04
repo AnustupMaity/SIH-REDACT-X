@@ -81,7 +81,7 @@ def main():
 
     training_args = TrainingArguments(
         output_dir=OUTPUT_DIR,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         eval_steps=100,
         learning_rate=3e-5,
         per_device_train_batch_size=8,
@@ -98,17 +98,63 @@ def main():
         push_to_hub=False,
     )
 
+    import numpy as np
+
+    def compute_metrics(p):
+        predictions, labels = p
+        predictions = np.argmax(predictions, axis=2)
+
+        true_predictions = [
+            [label_list[pred] for (pred, lbl) in zip(prediction, label) if lbl != -100]
+            for prediction, label in zip(predictions, labels)
+        ]
+        true_labels = [
+            [label_list[lbl] for (pred, lbl) in zip(prediction, label) if lbl != -100]
+            for prediction, label in zip(predictions, labels)
+        ]
+
+        flat_preds = [p for sublist in true_predictions for p in sublist]
+        flat_labels = [l for sublist in true_labels for l in sublist]
+
+        correct = sum(p == l for p, l in zip(flat_preds, flat_labels))
+        total = len(flat_labels)
+        accuracy = correct / total if total > 0 else 0.0
+
+        tp = sum((p == l) and (l != "O") for p, l in zip(flat_preds, flat_labels))
+        fp = sum((p != l) and (p != "O") for p, l in zip(flat_preds, flat_labels))
+        fn = sum((p != l) and (l != "O") for p, l in zip(flat_preds, flat_labels))
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+
+        return {
+            "precision": round(precision, 4),
+            "recall": round(recall, 4),
+            "f1": round(f1, 4),
+            "accuracy": round(accuracy, 4),
+        }
+
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=tokenized_datasets["train"],
         eval_dataset=tokenized_datasets["test"],
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         data_collator=data_collator,
+        compute_metrics=compute_metrics,
     )
 
     logger.info("Starting RoBERTa NER training...")
     trainer.train()
+    
+    logger.info("Running final evaluation on test dataset...")
+    eval_metrics = trainer.evaluate()
+    logger.info("==========================================")
+    logger.info("FINAL EVALUATION METRICS:")
+    for k, v in eval_metrics.items():
+        logger.info(f"  {k}: {v}")
+    logger.info("==========================================")
     
     logger.info(f"Saving fine-tuned RoBERTa model to {OUTPUT_DIR}...")
     trainer.save_model(OUTPUT_DIR)

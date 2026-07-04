@@ -1,156 +1,161 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ShieldCheck, Lock, User, ArrowRight, AlertTriangle } from 'lucide-react';
 import { endpoints } from '../lib/api';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loginStatus, setLoginStatus] = useState('');
-  const [loginAttempted, setLoginAttempted] = useState(false);
-  const [inputFocus, setInputFocus] = useState({
-    username: false,
-    password: false,
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
   });
-  const [errorMessage, setErrorMessage] = useState(''); // For displaying error messages
 
-  const handleLogin = async () => {
-    setLoginAttempted(true);
+  interface FormErrors {
+    username?: string;
+    password?: string;
+    general?: string;
+  }
 
-    try {
-      // Send login request to the backend
-      const response = await fetch(endpoints.login, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username.trim(),
-          password: password,
-        }),
-      });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
 
-      if (response.ok) {
-        const data = await response.json();
-        setLoginStatus('success');
-        setTimeout(() => {
-          navigate('/'); // Navigate to the home page on successful login
-        }, 1000);
-      } else {
-        const error = await response.json();
-        setLoginStatus('error');
-        setErrorMessage(error.detail || 'Invalid login credentials');
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+    if (!formData.username.trim()) newErrors.username = 'Username is required';
+    if (!formData.password.trim()) newErrors.password = 'Password is required';
+    return newErrors;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length === 0) {
+      setLoading(true);
+      try {
+        const response = await fetch(endpoints.login, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: formData.username.trim(),
+            password: formData.password,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.access_token) {
+            localStorage.setItem('token', data.access_token);
+            navigate('/');
+          }
+        } else {
+          setErrors({ general: 'Invalid username or password.' });
+        }
+      } catch (error) {
+        setErrors({ general: 'Unable to connect to the authentication server.' });
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      // Handle network or unexpected errors
-      setLoginStatus('error');
-      setErrorMessage('An unexpected error occurred. Please try again later.');
+    } else {
+      setErrors(newErrors);
     }
   };
 
-  useEffect(() => {
-    if (loginStatus !== '') {
-      const timer = setTimeout(() => {
-        setLoginAttempted(false);
-        setLoginStatus('');
-        setErrorMessage(''); // Clear error message
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [loginStatus]);
-
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-gray-100 to-gray-200">
-      <div className="w-full p-6 flex items-center justify-center bg-white shadow-sm">
-        <h1 className="text-4xl font-bold text-gray-800">Redact X</h1>
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-slate-100 font-sans p-6 relative overflow-hidden">
+      
+      {/* Dark Subtle Background Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-red-600/10 blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md px-6 mt-10">
-        <div
-          className={`bg-white rounded-2xl shadow-2xl p-8 transition-all duration-500 
-          ${loginAttempted ? (loginStatus === 'success' ? 'border-4 border-green-500' : 'border-4 border-red-500') : ''}`}
+      <div className="w-full max-w-md relative z-10">
+        {/* Header Logo */}
+        <div 
+          onClick={() => navigate('/landing')}
+          className="flex items-center justify-center gap-3 mb-8 cursor-pointer group"
         >
-          <h2 className="text-2xl font-semibold text-center mb-6 text-gray-700">Login to Redact X</h2>
+          <div className="p-2.5 bg-red-600 rounded-sm text-white shadow-lg group-hover:bg-red-700 transition-colors">
+            <ShieldCheck className="w-7 h-7" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">
+              RE-DACT
+            </h1>
+            <p className="text-xs text-slate-400 font-sans">
+              Secure Anonymization Tool
+            </p>
+          </div>
+        </div>
 
-          <div className="mb-6">
-            <div className={`relative transition-all duration-300 ${inputFocus.username ? 'scale-105' : ''}`}>
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onFocus={() => setInputFocus((prev) => ({ ...prev, username: true }))}
-                onBlur={() => setInputFocus((prev) => ({ ...prev, username: false }))}
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
-                  transition-all duration-300 
-                  ${inputFocus.username ? 'border-blue-500 shadow-md' : 'border-gray-300'} 
-                  ${loginAttempted && loginStatus === 'error' ? 'animate-shake' : ''}`}
-                disabled={loginAttempted}
-              />
-            </div>
+        {/* Login Box */}
+        <div className="bg-slate-900 border border-slate-800 p-8 rounded-sm shadow-xl relative">
+          <div className="mb-6 pb-3 border-b border-slate-800">
+            <h2 className="text-lg font-bold text-white">User Login</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Enter your credentials to access the redaction suite</p>
           </div>
 
-          <div className="mb-6">
-            <div className={`relative transition-all duration-300 ${inputFocus.password ? 'scale-105' : ''}`}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setInputFocus((prev) => ({ ...prev, password: true }))}
-                onBlur={() => setInputFocus((prev) => ({ ...prev, password: false }))}
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
-                  transition-all duration-300 pr-12
-                  ${inputFocus.password ? 'border-blue-500 shadow-md' : 'border-gray-300'} 
-                  ${loginAttempted && loginStatus === 'error' ? 'animate-shake' : ''}`}
-                disabled={loginAttempted}
-              />
+          {errors.general && (
+            <div className="mb-4 p-3 bg-red-950/40 border border-red-900/50 rounded-sm text-red-400 text-xs flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{errors.general}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate className="space-y-4 text-xs font-mono">
+            <div>
+              <label className="block text-slate-300 font-medium mb-1 font-sans">Username</label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  name="username"
+                  placeholder="Enter username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="w-full pl-9 p-2.5 bg-slate-950 border border-slate-800 rounded-sm text-white focus:outline-none focus:border-red-500 transition-colors"
+                />
+              </div>
+              {errors.username && <p className="text-red-400 mt-1 font-sans">{errors.username}</p>}
+            </div>
+
+            <div>
+              <label className="block text-slate-300 font-medium mb-1 font-sans">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Enter password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full pl-9 p-2.5 bg-slate-950 border border-slate-800 rounded-sm text-white focus:outline-none focus:border-red-500 transition-colors"
+                />
+              </div>
+              {errors.password && <p className="text-red-400 mt-1 font-sans">{errors.password}</p>}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full p-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-sm transition-colors mt-2 uppercase tracking-wide font-mono"
+            >
+              {loading ? 'Authenticating...' : 'Login'}
+            </button>
+
+            <div className="flex justify-center items-center pt-4 border-t border-slate-800 mt-4 text-xs font-sans">
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500 transition-colors"
+                onClick={() => navigate('/register')}
+                className="text-red-400 hover:text-red-300 transition-colors font-medium flex items-center gap-1"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                <span>Register New User</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-          </div>
-
-          <button
-            onClick={handleLogin}
-            className={`w-full text-white p-3 rounded-lg 
-              transition-all duration-300 transform 
-              ${!loginAttempted 
-                ? 'bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95' 
-                : loginStatus === 'success' 
-                  ? 'bg-green-500 animate-pulse' 
-                  : 'bg-red-500 animate-shake'}`}
-            disabled={loginAttempted}
-          >
-            {loginAttempted ? (loginStatus === 'success' ? 'Redirecting...' : 'Try Again') : 'Login'}
-          </button>
-
-          {loginStatus === 'success' && (
-            <div className="mt-4 text-center">
-              <p className="text-green-600 animate-bounce">Welcome to Redact X!</p>
-            </div>
-          )}
-
-          {loginStatus === 'error' && (
-            <div className="mt-4 text-center">
-              <p className="text-red-600">{errorMessage}</p>
-            </div>
-          )}
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => navigate('/register')}
-              className="text-blue-600 hover:underline"
-            >
-              Register New User
-            </button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
