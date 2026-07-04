@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { endpoints } from '../lib/api';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const LoginPage = () => {
 
     try {
       // Send login request to the backend
-      const response = await fetch('http://127.0.0.1:8000/login', {
+      const response = await fetch(endpoints.login, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

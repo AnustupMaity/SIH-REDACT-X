@@ -14,13 +14,17 @@ dob_pattern = r'\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2})\b'  # Date
 bank_account_pattern = r'\b\d{9,18}\b'  # Bank Account Numbers
 pan_pattern = r'\s*[A-Z]{5}[0-9]{4}[A-Z]\s*'  # PAN Numbers
 tan_pattern = r'\s*[A-Z]{4}[0-9]{4}[A-Z]\s*'  # TAN Numbers
-ip_address_pattern = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'  # IP Addresses
+ipv4_pattern = r'(\b(?:\d{1,3}\.){3}\d{1,3}\b)'
+ipv6_pattern = r'((?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|::(?:[a-fA-F0-9]{1,4}:){0,6}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){0,6}::(?:[a-fA-F0-9]{1,4}:){0,6}[a-fA-F0-9]{1,4})'
+ip_address_pattern = rf'({ipv4_pattern}|{ipv6_pattern})'
 ssn_pattern = r'\b\d{3}-\d{2}-\d{4}\b'  # Social Security Numbers (SSN)
 driver_license_pattern = r'[A-Z0-9]{1,10}-[A-Z0-9]{1,10}-[A-Z0-9]{1,10}'  # Driver's License Numbers
 mac_address_pattern = r'\b([A-Fa-f0-9]{2}[:-]){5}[A-Fa-f0-9]{2}\b'  # MAC Addresses
 url_pattern = r'https?://(?:www\.)?[^\s/$.?#].[^\s]*'  # URLs (Web Links)
 postal_code_pattern = r'\b\d{5}(-\d{4})?\b'  # Postal Codes/ZIP Codes
 invoice_number_pattern = r'\bINV\d{5,10}\b'  # Invoice Numbers
+order_id_pattern = r'\b(?:ORD|INV|TXN|BILL|REF|PO|TRK|ORDER|INVOICE|TRACKING)[\s#:-]*[A-Z0-9]{3,18}\b'  # Orders & Transactions
+money_pattern = r'(?:[\$€£₹]|Rs\.?|INR|USD|EUR|GBP)\s*\d+(?:[\.,]\d+)*(?:\s*(?:lakh|crore|million|billion|thousand|k|M|B))?|\b\d+(?:[\.,]\d+)*\s*(?:Rs\.?|INR|dollars|euros|pounds|lakhs|crores)\b'  # Bill Prices & Money
 passport_number_pattern = r'[A-Z]{1,2}[0-9]{6,9}'  # Passport Numbers
 uppercase_name_pattern = r'^[A-Z]+$'  # All-Uppercase Names
 
@@ -67,6 +71,15 @@ def redact_tan(text):
     return re.sub(tan_pattern, redact_with_x, text)
 
 def redact_ip_address(text):
+    """
+    Redacts all IPv4 and IPv6 addresses in the given text.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The text with all IP addresses redacted.
+    """
     return re.sub(ip_address_pattern, redact_with_x, text)
 
 def redact_ssn(text):
@@ -86,6 +99,12 @@ def redact_postal_code(text):
 
 def redact_invoice_number(text):
     return re.sub(invoice_number_pattern, redact_with_x, text)
+
+def redact_order_id(text):
+    return re.sub(order_id_pattern, redact_with_x, text)
+
+def redact_money(text):
+    return re.sub(money_pattern, redact_with_x, text)
 
 def redact_passport_number(text):
     return re.sub(passport_number_pattern, redact_with_x, text)
@@ -115,6 +134,8 @@ def redact_all(text):
     text = redact_url(text)
     text = redact_postal_code(text)
     text = redact_invoice_number(text)
+    text = redact_order_id(text)
+    text = redact_money(text)
     text = redact_passport_number(text)
     text = redact_uppercase_name(text)
     return text

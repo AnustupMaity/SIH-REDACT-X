@@ -1,25 +1,77 @@
-# Logs
-logs
-*.log
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Database & Temporary Storage
+*.db
+*.sqlite3
+form_data.db
+backend/form_data.db
+*.tmp
+temp/
+scratch/
+
+# Training & AI Model Outputs (keep base spacy models in repo if desired, ignore training outputs)
+backend/training/roberta_ner_model/
+backend/training/spacy_ner_model/
+backend/training/*.spacy
+backend/training/pii_training_dataset.json
+backend/tools/tesseract/
+backend/tools/poppler/
+
+# Node / Frontend
+node_modules/
+dist-react/
+dist-ssr/
+*.local
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-dist-react
-*.local
+# Logs
+logs/
+*.log
 
-# Editor directories and files
+# Editor & AI Tooling
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.bolt/
+.antigravity/

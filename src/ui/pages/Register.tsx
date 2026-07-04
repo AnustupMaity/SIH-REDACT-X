@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { endpoints } from '../lib/api';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const RegisterPage = () => {
     if (Object.keys(newErrors).length === 0) {
       try {
         // Send the form data to the FastAPI backend
-        const response = await fetch("http://127.0.0.1:8000/submit-form", {
+        const response = await fetch(endpoints.register, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
