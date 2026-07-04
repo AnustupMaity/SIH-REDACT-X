@@ -35,7 +35,7 @@ graph TD
     G -->|Entity Tokens| H[Level 5: RoBERTa Deep Learning Transformer]
     
     H -->|User Preference| I{Sanitization Mode}
-    I -->|Mask / Redact| J[Black-Box Redaction [REDACTED]]
+    I -->|Mask / Redact| J["Black-Box Redaction [REDACTED]"]
     I -->|Synthetic Anonymize| K[Synthetic PII Generator]
     
     J -->|Secure Output| L[Zero-Retention Memory Buffer]
@@ -153,4 +153,8 @@ npm run start
 ---
 
 ## 📄 License
-Designed and developed for cybersecurity innovation, Smart India Hackathon (SIH), and enterprise data privacy compliance. All rights reserved.
+This project is licensed under the **MIT License**.
+
+### 👨‍💻 Developer & Lead Architect
+- **Name:** ANUSTUP MAITY
+- **Contact:** [anustupmaity@gmail.com](mailto:anustupmaity@gmail.com)
