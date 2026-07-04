@@ -107,7 +107,7 @@ export function History() {
           </div>
         ) : historyItems.length === 0 ? (
           <div className="py-12 text-center text-slate-500 text-xs font-mono">
-            No redaction operations recorded in local memory yet. Execute sanitization in Text or Document modules!
+            No redaction operations recorded in local memory yet. Run redaction in Text or Document modules!
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -115,7 +115,7 @@ export function History() {
               <thead>
                 <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider">
                   <th className="py-3 px-4 font-bold">ID</th>
-                  <th className="py-3 px-4 font-bold">Operation / File Buffer</th>
+                  <th className="py-3 px-4 font-bold">File / Operation</th>
                   <th className="py-3 px-4 font-bold">Type</th>
                   <th className="py-3 px-4 font-bold">Level</th>
                   <th className="py-3 px-4 font-bold">Status</th>

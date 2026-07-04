@@ -148,7 +148,6 @@ export function TextRedaction() {
 
       const data = await response.json();
       setOutputText(data.redacted_text || 'Error: No redacted text returned');
-      setShowFeedbackModal(true);
     } catch (error) {
       console.error(error);
       setOutputText('An error occurred while communicating with the RE-DACT AI Engine. Please check that backend server is running.');
@@ -200,7 +199,6 @@ export function TextRedaction() {
             <AlertTriangle className="w-4 h-4 text-white animate-pulse" />
           </span>
           <span className="text-sm font-black tracking-widest text-white">TEXT SANITIZATION MODULE</span>
-          <span className="hidden sm:inline text-red-200 font-normal">| Target: TEXT-PROD-02</span>
         </div>
         <div className="flex items-center gap-4 sm:gap-6 text-xs">
           <span className="bg-red-950/90 px-2.5 py-1 rounded-sm border border-red-500/50 text-white">
@@ -264,22 +262,6 @@ export function TextRedaction() {
               Synthetic Name Generation
             </button>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Test Feeds:</span>
-            <button
-              onClick={() => setInputText(SAMPLE_INDIAN_PII)}
-              className="text-xs px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-sm text-red-400 transition-colors font-bold"
-            >
-              🇮🇳 Indian PII
-            </button>
-            <button
-              onClick={() => setInputText(SAMPLE_GLOBAL_PII)}
-              className="text-xs px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-sm text-blue-400 transition-colors font-bold"
-            >
-              🌐 Global PII
-            </button>
-          </div>
         </div>
 
         {/* Redaction Slider Section */}
@@ -314,7 +296,7 @@ export function TextRedaction() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Original Input Buffer
+                Input Text
               </label>
               <span className="text-xs text-slate-500">{inputText.length} chars</span>
             </div>
@@ -329,7 +311,7 @@ export function TextRedaction() {
           <div className="space-y-2 relative">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Sanitized Output Stream
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Redacted Output
               </label>
               <span className="text-xs text-slate-500">{outputText.length} chars</span>
             </div>
@@ -380,12 +362,21 @@ export function TextRedaction() {
 
         {/* Action Controls */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 font-mono">
+          {outputText && (
+            <button
+              onClick={() => setShowFeedbackModal(true)}
+              className="px-4 py-2 rounded-sm bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-300 text-xs font-bold transition-all flex items-center gap-1.5 uppercase tracking-wider"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Provide Feedback</span>
+            </button>
+          )}
           <button
             onClick={handleClear}
             disabled={!inputText && !outputText}
             className="px-4 py-2 rounded-sm border border-slate-800 text-slate-300 hover:bg-slate-800 text-xs font-semibold transition-all disabled:opacity-50 uppercase tracking-wider"
           >
-            Clear Buffer
+            Clear
           </button>
           <button
             onClick={handleRedact}
@@ -395,12 +386,12 @@ export function TextRedaction() {
             {isLoading ? (
               <>
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Executing Sanitization...</span>
+                <span>Processing...</span>
               </>
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Execute Sanitization</span>
+                <span>Run</span>
               </>
             )}
           </button>

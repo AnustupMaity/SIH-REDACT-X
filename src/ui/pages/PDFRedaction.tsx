@@ -95,7 +95,6 @@ export function PDFRedaction() {
             <AlertTriangle className="w-4 h-4 text-white animate-pulse" />
           </span>
           <span className="text-sm font-black tracking-widest text-white">DOCUMENT OCR SANITIZER</span>
-          <span className="hidden sm:inline text-red-200 font-normal">| Target: FILE-SRV-05</span>
         </div>
         <div className="flex items-center gap-4 sm:gap-6 text-xs">
           <span className="bg-red-950/90 px-2.5 py-1 rounded-sm border border-red-500/50 text-white">
@@ -178,12 +177,12 @@ export function PDFRedaction() {
                   onClick={() => setFile(null)}
                   className="text-xs font-semibold text-red-400 hover:text-red-300 px-2.5 py-1 rounded-sm bg-slate-900 border border-slate-800 transition-colors uppercase tracking-wider"
                 >
-                  Remove Buffer
+                  Remove File
                 </button>
               </div>
               <div>
                 <div className="flex justify-between text-xs font-bold text-slate-400 mb-1">
-                  <span>Buffer Readiness</span>
+                  <span>File Readiness</span>
                   <span>{progress}%</span>
                 </div>
                 <Progress value={progress} />
@@ -227,12 +226,12 @@ export function PDFRedaction() {
                 {isProcessing ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Executing OCR Sanitization...</span>
+                    <span>Processing...</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Execute Document Redaction (Level {currentLevel})</span>
+                    <span>Run Redaction (Level {currentLevel})</span>
                   </>
                 )}
               </button>

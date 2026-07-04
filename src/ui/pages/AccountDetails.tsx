@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Shield, Key, Clock, LogOut } from 'lucide-react';
+import { User, LogOut, Shield, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function AccountDetails() {
@@ -7,82 +7,68 @@ export function AccountDetails() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/login');
+    window.location.href = '/#/login';
   };
 
   return (
-    <main className="pt-24 px-6 pb-12 max-w-4xl mx-auto font-sans">
-      <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+    <main className="pt-24 px-6 pb-12 max-w-3xl mx-auto font-sans">
+      <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-800">
         <div>
-          <h1 className="text-2xl font-bold text-white">Account Details</h1>
-          <p className="text-sm text-gray-400 mt-1">Manage your operator credentials and security preferences.</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Account Details</h1>
+          <p className="text-sm text-slate-400 mt-1">View your current user profile and session status.</p>
         </div>
         <button
-          onClick={() => navigate('/')}
-          className="px-4 py-2 text-sm bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-sm text-gray-300 transition-colors"
+          onClick={() => navigate('/home')}
+          className="px-4 py-2 text-xs font-mono uppercase font-bold bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-sm text-slate-300 transition-colors"
         >
           Back to Home
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 bg-gray-900 border border-gray-800 p-6 rounded-sm flex flex-col items-center text-center h-fit">
-          <div className="w-20 h-20 bg-blue-600/20 border border-blue-500/30 rounded-full flex items-center justify-center text-blue-500 mb-4">
-            <User className="w-10 h-10" />
+      <div className="bg-slate-900 border border-slate-800 p-8 rounded-sm space-y-8">
+        <div className="flex items-center gap-6 pb-6 border-b border-slate-800">
+          <div className="w-16 h-16 bg-red-600/20 border border-red-500/30 rounded-full flex items-center justify-center text-red-500 shrink-0">
+            <User className="w-8 h-8" />
           </div>
-          <h2 className="text-lg font-bold text-white">Administrator</h2>
-          <p className="text-xs font-mono text-emerald-400 mt-1">Level 5 Clearance</p>
-          <div className="w-full pt-4 mt-6 border-t border-gray-800">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-red-400 bg-red-950/20 hover:bg-red-950/40 border border-red-900/40 rounded-sm transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
+          <div>
+            <h2 className="text-xl font-bold text-white">Current User</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider">Active Session</span>
+            </div>
           </div>
         </div>
 
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-gray-900 border border-gray-800 p-6 rounded-sm space-y-4">
-            <h3 className="text-base font-bold text-white border-b border-gray-800 pb-3 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-blue-500" />
-              Security Profile
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-500 block text-xs uppercase font-mono">Username</span>
-                <span className="text-gray-200 font-medium">admin</span>
-              </div>
-              <div>
-                <span className="text-gray-500 block text-xs uppercase font-mono">Role</span>
-                <span className="text-gray-200 font-medium">System Operator</span>
-              </div>
-              <div>
-                <span className="text-gray-500 block text-xs uppercase font-mono">Session Encryption</span>
-                <span className="text-emerald-400 font-mono text-xs">AES-256-GCM (Active)</span>
-              </div>
-              <div>
-                <span className="text-gray-500 block text-xs uppercase font-mono">Data Retention</span>
-                <span className="text-blue-400 font-mono text-xs">Zero Retention Protocol</span>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-4 bg-slate-950 border border-slate-800 rounded-sm">
+            <span className="text-slate-500 block text-xs uppercase font-mono tracking-wider mb-1">Username</span>
+            <span className="text-white font-medium text-base">admin</span>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 p-6 rounded-sm space-y-4">
-            <h3 className="text-base font-bold text-white border-b border-gray-800 pb-3 flex items-center gap-2">
-              <Key className="w-4 h-4 text-emerald-500" />
-              API & Model Configuration
-            </h3>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Your account is authorized to execute offline Tesseract OCR, Poppler document conversion, and both spaCy and RoBERTa NLP models across all 5 gradational redaction tiers, including Synthetic Name Generation.
-            </p>
-            <div className="flex justify-between items-center pt-2 text-xs text-gray-500 font-mono border-t border-gray-800">
-              <span>Token Status: Valid</span>
-              <span>Expires: Never (Local Storage)</span>
-            </div>
+          <div className="p-4 bg-slate-950 border border-slate-800 rounded-sm">
+            <span className="text-slate-500 block text-xs uppercase font-mono tracking-wider mb-1">Role</span>
+            <span className="text-white font-medium text-base">Authenticated User</span>
           </div>
+
+          <div className="p-4 bg-slate-950 border border-slate-800 rounded-sm">
+            <span className="text-slate-500 block text-xs uppercase font-mono tracking-wider mb-1">Status</span>
+            <span className="text-emerald-400 font-mono text-sm">Logged In</span>
+          </div>
+
+          <div className="p-4 bg-slate-950 border border-slate-800 rounded-sm">
+            <span className="text-slate-500 block text-xs uppercase font-mono tracking-wider mb-1">Access Method</span>
+            <span className="text-slate-300 font-mono text-sm">Standard Login</span>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-slate-800 flex justify-end">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-6 py-2.5 text-xs font-mono uppercase font-bold text-red-400 bg-slate-950 hover:bg-red-950/40 border border-slate-800 hover:border-red-900/60 rounded-sm transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout Account</span>
+          </button>
         </div>
       </div>
     </main>

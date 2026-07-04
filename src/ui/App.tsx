@@ -44,19 +44,19 @@ function Home() {
     {
       icon: FileText,
       title: 'Text Redaction',
-      description: 'Redact sensitive information from text input',
+      description: 'Obfuscate PII, Indian numbers, names, and custom confidential text in real-time.',
       path: '/text-redaction',
     },
     {
       icon: FileUp,
       title: 'File Redaction',
-      description: 'Redact sensitive information from any document of any extension',
+      description: 'Sanitize PDF documents, Word files, Excel spreadsheets, and scanned images offline.',
       path: '/pdf-redaction',
     },
     {
       icon: Clock,
       title: 'History',
-      description: 'View your last 25 redaction operations',
+      description: 'Review your recent redaction logs and processed files stored in local memory.',
       path: '/history',
     },
   ];
@@ -67,31 +67,81 @@ function Home() {
   };
 
   return (
-    <main className="pt-24 px-4 pb-12 max-w-5xl mx-auto font-sans">
-      <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-800">
-        <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Choose Redaction Type</h2>
-          <p className="text-xs text-slate-400 mt-1">Select an option below to begin sanitizing sensitive data</p>
+    <main className="pt-24 px-6 pb-16 max-w-6xl mx-auto font-sans relative overflow-hidden">
+      {/* Dynamic Ambient Background Animations */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-r from-red-600/15 via-red-900/10 to-blue-600/10 blur-3xl pointer-events-none -z-10 animate-pulse" />
+      <div className="absolute top-1/3 right-10 w-72 h-72 bg-red-500/10 rounded-full blur-2xl pointer-events-none -z-10 animate-bounce duration-1000" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b10_1px,transparent_1px),linear-gradient(to_bottom,#1e293b10_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none -z-20" />
+
+      {/* Hero Welcome Banner */}
+      <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-md p-8 rounded-sm mb-10 shadow-2xl relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-red-600/10 rounded-full blur-2xl group-hover:bg-red-600/20 transition-all pointer-events-none" />
+        
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-red-950/60 border border-red-500/30 text-red-400 text-xs font-mono font-bold tracking-wider uppercase">
+              <Shield className="w-3.5 h-3.5 text-red-500 animate-pulse" />
+              <span>Security Console Active</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight font-sans">
+              Welcome to <span className="text-red-500 underline decoration-red-600/50 underline-offset-4">RE-DACT</span> Studio
+            </h1>
+            <p className="text-sm text-slate-400 max-w-2xl leading-relaxed">
+              Your localized workspace for stripping sensitive personal identifiers, Indian regulatory numbers, and financial data using advanced offline NLP and synthetic anonymization.
+            </p>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-5 py-2.5 text-xs font-mono uppercase font-bold text-red-400 bg-slate-950 hover:bg-red-950/40 border border-slate-800 hover:border-red-900/60 rounded-sm transition-all shrink-0 shadow-lg"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout Account</span>
+          </button>
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-mono uppercase font-bold text-red-400 bg-slate-900 hover:bg-red-950/40 border border-slate-800 hover:border-red-900/60 rounded-sm transition-all"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Logout</span>
-        </button>
+
+        {/* Live Status Indicators */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800/80 font-mono text-xs">
+          <div className="flex items-center gap-2.5 text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span className="font-bold">100% Offline AI</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-slate-300">
+            <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+            <span>2.14 Lakh Trained Corpus</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-slate-300">
+            <Lock className="w-4 h-4 text-red-400 shrink-0" />
+            <span>Zero Data Retention</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-slate-300">
+            <Activity className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>5 Redaction Levels</span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {redactionOptions.map((option) => (
-          <RedactionCard
-            key={option.title}
-            icon={option.icon}
-            title={option.title}
-            description={option.description}
-            onClick={() => navigate(option.path)}
-          />
-        ))}
+      {/* Module Selection Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <h2 className="text-lg font-bold text-white tracking-wide uppercase font-mono flex items-center gap-2">
+            <Terminal className="w-4 h-4 text-red-500" />
+            Select Sanitization Module
+          </h2>
+          <span className="text-xs text-slate-500 font-mono">Choose a module to launch</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          {redactionOptions.map((option) => (
+            <RedactionCard
+              key={option.title}
+              icon={option.icon}
+              title={option.title}
+              description={option.description}
+              onClick={() => navigate(option.path)}
+            />
+          ))}
+        </div>
       </div>
     </main>
   );
