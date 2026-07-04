@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, User, HelpCircle, Info, Phone, History, Cpu, ShieldCheck, Terminal, AlertTriangle } from 'lucide-react';
+import { X, User, HelpCircle, Info, Phone, History, Cpu, ShieldCheck, Terminal, AlertTriangle, Home as HomeIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useThemeStore } from '../store/theme';
 
@@ -10,13 +11,15 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useThemeStore();
+  const navigate = useNavigate();
 
   const menuItems = [
-    { icon: User, label: 'Account Details', path: '/#/account-details' },
-    { icon: HelpCircle, label: 'How to Use', path: '/#/how-to-use' },
-    { icon: Info, label: 'About Us', path: '/#/about-us' },
-    { icon: Phone, label: 'Contact Us', path: '/#/contact-us' },
-    { icon: History, label: 'History', path: '/#/history' },
+    { icon: HomeIcon, label: 'Home', path: '/home' },
+    { icon: User, label: 'Account Details', path: '/account-details' },
+    { icon: HelpCircle, label: 'How to Use', path: '/how-to-use' },
+    { icon: Info, label: 'About Us', path: '/about-us' },
+    { icon: Phone, label: 'Contact Us', path: '/contact-us' },
+    { icon: History, label: 'History', path: '/history' },
   ];
 
   return (
@@ -59,7 +62,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <button
                 key={item.label}
                 onClick={() => {
-                  window.location.href = item.path;
+                  navigate(item.path);
                   onClose();
                 }}
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-300 hover:bg-slate-900 border border-transparent hover:border-slate-800 rounded-sm transition-all group text-left uppercase tracking-wider"

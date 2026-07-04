@@ -63,7 +63,7 @@ function Home() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/login');
+    window.location.href = '/#/login';
   };
 
   return (
@@ -108,7 +108,7 @@ function App() {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route
-                path="/"
+                path="/home"
                 element={
                   <ProtectedRoute>
                     <>
@@ -119,6 +119,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/" element={<Navigate to="/home" replace />} />
               <Route
                 path="/text-redaction"
                 element={
