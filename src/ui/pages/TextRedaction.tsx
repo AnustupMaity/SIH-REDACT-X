@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Sparkles, Shield, Cpu, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, Layers, AlertTriangle, Terminal, Play } from 'lucide-react';
+import { Download, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, Layers, AlertTriangle, Terminal, Play } from 'lucide-react';
 import { Slider } from '../components/Slider';
 import { BackButton } from '../components/BackButton';
 import { cn } from '../lib/utils';
@@ -16,26 +16,6 @@ const LEVEL_DESCRIPTIONS = [
   { title: "Level 4: Advanced Domain NER", desc: "Broad semantic masking using best-in-class spaCy domain-specific pipeline.", badge: "spaCy Best", color: "text-purple-400" },
   { title: "Level 5: Deep Learning Transformer", desc: "State-of-the-art neural network (BERT / RoBERTa) fine-tuned on complex Indian & Global PII datasets.", badge: "BERT / RoBERTa AI", color: "text-red-400 font-bold" },
 ];
-
-const SAMPLE_INDIAN_PII = `Confidential Financial & HR Report - Tata Consultancy Services (TCS)
-Employee Name: Rajesh Sharma | Location: Mumbai, Maharashtra
-Email: rajesh.sharma@tcs.com | Phone: +91-9876543210
-Aadhaar Number: 5485-6985-1245 | PAN: ABCDE1234F
-Date of Joining: 15th August 2023 | Annual Salary: Rs. 18,50,000
-
-Transaction Details:
-Invoice Number: #INV-2023-8899 was billed to Reliance Industries in Bengaluru for Rs. 4,50,000.
-Order ID: ORD-554433 authorized by Aditya Verma on 14/10/2023 via HDFC Bank transfer.`;
-
-const SAMPLE_GLOBAL_PII = `Global Incident & Audit Log - Apple Inc.
-Reported by: Sarah Jenkins, Senior VP of Engineering
-Office Location: Cupertino, San Francisco | Date: October 14th, 2024
-Contact Email: s.jenkins@apple.com | Emergency Phone: +1-415-555-0199
-Passport Number: P98765432 | Driver License: D123-456-789
-
-Financial Billing Audit:
-Michael Davis authorized wire transfer TXN-889922 to Microsoft Corporation in London.
-Total Bill Price: $150,000 USD paid against Invoice REF-102938 on 01-01-2025.`;
 
 export function TextRedaction() {
   const [inputText, setInputText] = useState('');

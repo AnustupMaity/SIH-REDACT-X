@@ -1,5 +1,4 @@
-import React from 'react';
-import { Info, Shield, Database, Lock, CheckCircle2 } from 'lucide-react';
+import { Info, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function AboutUs() {

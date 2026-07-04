@@ -1,8 +1,8 @@
 import React, { useState, Suspense } from 'react';
 import { HashRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import {
-  FileText, FileUp, Clock, LogOut, Loader2, AlertTriangle, CheckCircle2,
-  Shield, Activity, Lock, Terminal, ArrowRight, ChevronRight, Server, Database, ShieldAlert, Play
+  FileText, FileUp, Clock, LogOut, Loader2, CheckCircle2,
+  Shield, Activity, Lock, Terminal
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
