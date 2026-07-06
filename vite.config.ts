@@ -47,23 +47,5 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist-react',
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('docx') || id.includes('jspdf') || id.includes('file-saver')) {
-              return 'office-vendor';
-            }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons-vendor';
-            }
-            return 'vendor';
-          }
-        },
-      },
-    },
   },
 });
