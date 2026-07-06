@@ -1,3 +1,12 @@
+---
+title: RedactX
+emoji: 🛡️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # RE-DACT : Advanced PII & Document Sanitization Platform
 **Smart India Hackathon (SIH) & Enterprise Security Suite**
 
