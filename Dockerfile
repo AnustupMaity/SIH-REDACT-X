@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y \
 # Install Python backend dependencies
 COPY backend/requirements.txt ./backend/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r backend/requirements.txt
+    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r backend/requirements.txt && \
+    python -m spacy download en_core_web_sm
 
 # Pre-download fallback model so there is zero download wait time during fallback
 RUN python -c "from transformers import pipeline; pipeline('ner', model='dslim/distilbert-NER')"
