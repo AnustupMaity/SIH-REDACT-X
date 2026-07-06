@@ -11,6 +11,7 @@ export function HowToUse() {
       title: 'No Redaction (Pass-through)',
       desc: 'Returns the original document without modifications. Used for baseline logging and formatting verification.'
     },
+    {
       level: 'Level 1',
       title: 'Regex & Basic Rule Scrubbing',
       desc: 'Redacts structured text identifiers (PAN cards, Aadhaar, phone numbers, emails, bank accounts) across all documents via fast OCR.'
