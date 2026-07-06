@@ -75,3 +75,4 @@ logs/
 *.sw?
 .bolt/
 .antigravity/
+backend/model/
