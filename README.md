@@ -11,6 +11,14 @@ pinned: false
 # RE-DACT : Advanced PII & Document Sanitization Platform
 **Smart India Hackathon (SIH) & Enterprise Security Suite**
 
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue?style=for-the-badge)](https://anustup55-redactx.hf.space)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://anustup55-redactx.hf.space)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![OpenCV Vision](https://img.shields.io/badge/OpenCV-Biometric%20Redaction-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
+
+> 🚀 **Experience the Live Web Application here:** [**https://anustup55-redactx.hf.space**](https://anustup55-redactx.hf.space)
+
 `RE-DACT` is an enterprise-grade, offline-first data sanitization and anonymization platform. It enables organizations, cybersecurity teams, and compliance officers to detect, strip, and synthetically replace Personally Identifiable Information (PII) from unstructured text, complex PDFs, Office documents, and scanned images.
 
 ---
