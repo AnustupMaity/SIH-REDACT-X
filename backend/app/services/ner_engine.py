@@ -15,7 +15,35 @@ model_path3 = os.path.join(MODEL_DIR, "3")
 # Memory cache for lazy loading spaCy and Transformer models
 _spacy_models_cache: Dict[int, Any] = {}
 _transformer_pipeline = None
-_transformer_model_name = os.environ.get("NER_TRANSFORMER_MODEL", "dslim/distilbert-NER")
+import time
+
+# Default fallback cloud model
+FALLBACK_TRANSFORMER_MODEL = "dslim/distilbert-NER"
+
+def get_target_transformer_model():
+    """
+    Check for custom trained Transformer model paths or environment variables.
+    Returns the path to the custom model if found, otherwise returns FALLBACK_TRANSFORMER_MODEL.
+    """
+    env_model = os.environ.get("NER_TRANSFORMER_MODEL")
+    if env_model:
+        return env_model
+        
+    # Check potential local trained model directories
+    possible_paths = [
+        os.path.join(BASE_DIR, "training", "roberta_ner_model"),
+        os.path.join(MODEL_DIR, "roberta_ner_model"),
+        os.path.join(MODEL_DIR, "roberta"),
+        os.path.join(BASE_DIR, "roberta_ner_model")
+    ]
+    for path in possible_paths:
+        if os.path.exists(path):
+            logging.info(f"Auto-detected custom trained Transformer model at: {path}")
+            return path
+            
+    return FALLBACK_TRANSFORMER_MODEL
+
+_transformer_model_name = get_target_transformer_model()
 
 def get_spacy_model(level: int = 1):
     """
@@ -46,23 +74,55 @@ def get_spacy_model(level: int = 1):
 
 def get_transformer_pipeline():
     """
-    Lazy load HuggingFace Transformer NER pipeline (using lightweight DistilBERT by default).
+    Lazy load HuggingFace Transformer NER pipeline.
+    Tries to load the custom trained model up to 3 times before falling back to the downloaded cloud model.
     """
     global _transformer_pipeline
     if _transformer_pipeline is None:
         try:
             from transformers import pipeline
-            logging.info(f"Loading Transformer NER pipeline: {_transformer_model_name}...")
-            try:
-                _transformer_pipeline = pipeline("ner", model=_transformer_model_name, aggregation_strategy="simple")
-            except TypeError:
-                _transformer_pipeline = pipeline("ner", model=_transformer_model_name, grouped_entities=True)
-            logging.info("Transformer NER pipeline loaded successfully.")
+            
+            target_model = get_target_transformer_model()
+            models_to_try = []
+            
+            # If custom model is selected, attempt to load it up to 3 times
+            if target_model != FALLBACK_TRANSFORMER_MODEL:
+                for attempt_num in range(1, 4):
+                    models_to_try.append((target_model, attempt_num, True))
+            
+            # Finally, add fallback cloud model as the last resort
+            models_to_try.append((FALLBACK_TRANSFORMER_MODEL, 1, False))
+            
+            for model_path, attempt, is_custom in models_to_try:
+                try:
+                    if is_custom:
+                        logging.info(f"Attempting to load custom trained Transformer model from '{model_path}' (Attempt {attempt} of 3)...")
+                    else:
+                        logging.info(f"Loading fallback downloaded cloud model '{model_path}'...")
+                        
+                    try:
+                        _transformer_pipeline = pipeline("ner", model=model_path, aggregation_strategy="simple")
+                    except TypeError:
+                        _transformer_pipeline = pipeline("ner", model=model_path, grouped_entities=True)
+                        
+                    logging.info(f"Transformer NER pipeline successfully loaded using: {model_path}")
+                    break
+                except Exception as e:
+                    if is_custom:
+                        logging.warning(f"Failed to load custom model on Attempt {attempt}: {e}")
+                        if attempt < 3:
+                            time.sleep(1) # short pause before retry
+                        else:
+                            logging.warning(f"Custom trained model failed after 3 attempts! Switching to downloaded fallback model '{FALLBACK_TRANSFORMER_MODEL}'.")
+                    else:
+                        logging.error(f"Error loading fallback transformer model '{model_path}': {e}. Falling back to spaCy NER.")
+                        return None
+                        
         except ImportError:
             logging.warning("Transformers library not installed. Transformer NER will fallback to spaCy.")
             return None
         except Exception as e:
-            logging.error(f"Error loading transformer model {_transformer_model_name}: {e}. Falling back to spaCy NER.")
+            logging.error(f"Unexpected error initializing Transformer pipeline: {e}. Falling back to spaCy NER.")
             return None
     return _transformer_pipeline
 
