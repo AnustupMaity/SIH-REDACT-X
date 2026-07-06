@@ -1,13 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import electron from 'vite-plugin-electron-renderer';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    electron(),
     react(),
     viteStaticCopy({
       targets: [
@@ -44,7 +42,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: './',
+  base: '/',
   build: {
     outDir: 'dist-react',
     rollupOptions: {
