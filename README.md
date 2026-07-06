@@ -17,7 +17,8 @@ pinned: false
 
 ## 🚀 Key Architectural Highlights
 
-- **100% Offline & Zero Third-Party API Dependency:** All OCR processing (Tesseract, Poppler) and NLP transformer models execute entirely within your local environment or private cloud. No data ever leaves your secure perimeter.
+- **100% Offline & Zero Third-Party API Dependency:** All OCR processing (Tesseract, Poppler), computer vision algorithms (OpenCV), and NLP transformer models execute entirely within your local environment or private cloud. No data ever leaves your secure perimeter.
+- **Automated Visual PII & Biometric Redaction:** Integrates OpenCV Haar Cascade classifiers and morphological HSV contour analysis to automatically detect and de-identify **human faces, handwritten signatures, official ink stamps, seals, and thumbprints** in scanned images and PDF documents via irreversible Gaussian blurring.
 - **Zero-Retention Protocol:** Documents and text inputs are processed entirely in memory and immediately discarded after sanitization. No original contents are persisted on disk or cached.
 - **Gradational Anonymization (Levels 0–5):** Choose from baseline pass-through logging, pre-compiled regex pattern matching, progressive spaCy statistical NER layers, up to RoBERTa deep learning transformers.
 - **In-Place Synthetic Anonymization:** Unlike basic black-box masking, Level 5 generates context-aware, grammatically identical synthetic data replacements (e.g., replacing a real Indian PAN, Aadhaar, or person name with a realistic dummy identifier).
@@ -38,8 +39,9 @@ graph TD
     C -->|PDF Document| E[Poppler PDF Parser]
     C -->|Scanned Image / OCR| F[Tesseract Offline OCR Engine]
     
-    E -->|Extracted Text| D
-    F -->|Extracted Text| D
+    E -->|Page Render| V[OpenCV Vision: Faces, Signatures, Stamps & Thumbprints]
+    F -->|Image Matrix| V[OpenCV Vision: Faces, Signatures, Stamps & Thumbprints]
+    V -->|Extracted Text| D
     
     D -->|Sanitized Stream| G[Level 2-4: spaCy Statistical NER Pipeline]
     G -->|Entity Tokens| H[Level 5: RoBERTa Deep Learning Transformer]
