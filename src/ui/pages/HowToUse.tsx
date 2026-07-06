@@ -11,20 +11,19 @@ export function HowToUse() {
       title: 'No Redaction (Pass-through)',
       desc: 'Returns the original document without modifications. Used for baseline logging and formatting verification.'
     },
-    {
       level: 'Level 1',
       title: 'Regex & Basic Rule Scrubbing',
-      desc: 'Redacts structured numerical and pattern-based identifiers including Indian PAN cards, Aadhaar numbers, phone numbers, email addresses, URLs, bank accounts, and monetary figures using pre-compiled regex.'
+      desc: 'Redacts structured text identifiers (PAN cards, Aadhaar, phone numbers, emails, bank accounts) across all documents via fast OCR.'
     },
     {
       level: 'Level 2 - 4',
-      title: 'Gradational spaCy Statistical NER',
-      desc: 'Layers custom-trained spaCy NLP models on top of Level 1 regex. Progressively redacts personal names, organizations, and geographical locations based on user sensitivity preference.'
+      title: 'Gradational spaCy Statistical NER + Visual Biometrics',
+      desc: 'Layers spaCy NLP models for names, organizations, and locations across all files. For PDFs & Images: Level 3 automatically blurs Human Faces, and Level 4 blurs Handwritten Signatures.'
     },
     {
       level: 'Level 5',
-      title: 'Transformer Deep Learning & Synthetic Replacement',
-      desc: 'Engages fine-tuned RoBERTa transformers trained on over 2.14 Lakh PII records. In Synthetic Mode, replaces sensitive identifiers in-place with realistic synthetic names, PANs, and phone numbers while keeping grammatical structure identical.'
+      title: 'Transformer Deep Learning + Total Biometrics',
+      desc: 'Engages fine-tuned RoBERTa transformers for text/data files. For PDFs & Images: performs Total Biometric De-identification (Faces, Signatures, Official Colored Stamps, Seals, and Fingerprints/Thumbprints).'
     }
   ];
 

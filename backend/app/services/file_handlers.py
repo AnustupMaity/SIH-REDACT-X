@@ -67,11 +67,17 @@ async def record_history(user_id: Optional[int], filename: str, operation_type: 
     except Exception as e:
         logging.warning(f"Failed to log operation history: {e}")
 
-def redact_faces_in_image(image: Image.Image, method: str = "blur") -> Image.Image:
+def redact_faces_in_image(image: Image.Image, method: str = "blur", redaction_level: int = 1) -> Image.Image:
     """
-    Detects and de-identifies visual biometric PII including human faces, handwritten signatures, 
-    official colored stamps, and thumbprints using OpenCV Haar Cascades and morphological contour analysis.
+    Detects and de-identifies visual biometric PII based on redaction level:
+    - Levels 1-2: No visual masking (OCR text redaction only)
+    - Level 3: Human Faces only
+    - Level 4: Human Faces + Handwritten Signatures
+    - Level 5: Human Faces + Signatures + Official Colored Stamps & Fingerprints/Thumbprints
     """
+    if redaction_level < 3:
+        return image
+
     try:
         import cv2
         import numpy as np
@@ -89,59 +95,64 @@ def redact_faces_in_image(image: Image.Image, method: str = "blur") -> Image.Ima
         
         boxes_to_redact = []
 
-        # 1. FACE DETECTION (Haar Cascade)
-        try:
-            cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-            face_cascade = cv2.CascadeClassifier(cascade_path)
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-            for (fx, fy, fw, fh) in faces:
-                boxes_to_redact.append((fx, fy, fw, fh, "face"))
-        except Exception as e_face:
-            logging.debug(f"Face detection skipped: {e_face}")
+        # 1. FACE DETECTION (Haar Cascade) - Runs at levels 3 to 5
+        if redaction_level >= 3:
+            try:
+                cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+                face_cascade = cv2.CascadeClassifier(cascade_path)
+                faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+                for (fx, fy, fw, fh) in faces:
+                    boxes_to_redact.append((fx, fy, fw, fh, "face"))
+            except Exception as e_face:
+                logging.debug(f"Face detection skipped: {e_face}")
 
-        # 2. COLORED STAMPS, SEALS & THUMBPRINTS (HSV Color thresholding for Blue/Purple/Red/Green ink on white documents)
-        try:
-            hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-            sat_mask = hsv[:, :, 1] > 60
-            val_mask = (hsv[:, :, 2] > 30) & (hsv[:, :, 2] < 240)
-            color_mask = ((sat_mask & val_mask) * 255).astype(np.uint8)
-            
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-            closed_color = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
-            contours, _ = cv2.findContours(closed_color, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
-            for cnt in contours:
-                area = cv2.contourArea(cnt)
-                if 400 < area < (h * w * 0.4):
-                    cx, cy, cw, ch = cv2.boundingRect(cnt)
-                    aspect = cw / float(max(1, ch))
-                    if 0.3 < aspect < 5.0:
-                        boxes_to_redact.append((cx, cy, cw, ch, "stamp_thumbprint"))
-        except Exception as e_color:
-            logging.debug(f"Color stamp/thumbprint detection skipped: {e_color}")
+        # 2. COLORED STAMPS, SEALS & THUMBPRINTS - Runs only at Level 5
+        if redaction_level >= 5:
+            try:
+                hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+                sat_mask = hsv[:, :, 1] > 60
+                val_mask = (hsv[:, :, 2] > 30) & (hsv[:, :, 2] < 240)
+                color_mask = ((sat_mask & val_mask) * 255).astype(np.uint8)
+                
+                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+                closed_color = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
+                contours, _ = cv2.findContours(closed_color, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                
+                for cnt in contours:
+                    area = cv2.contourArea(cnt)
+                    if 400 < area < (h * w * 0.4):
+                        cx, cy, cw, ch = cv2.boundingRect(cnt)
+                        aspect = cw / float(max(1, ch))
+                        if 0.3 < aspect < 5.0:
+                            boxes_to_redact.append((cx, cy, cw, ch, "stamp_thumbprint"))
+            except Exception as e_color:
+                logging.debug(f"Color stamp/thumbprint detection skipped: {e_color}")
 
-        # 3. HANDWRITTEN SIGNATURES & GRAYSCALE THUMBPRINTS (Morphological stroke density analysis)
-        try:
-            thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 8)
-            sig_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 5))
-            connected_strokes = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, sig_kernel)
-            
-            contours, _ = cv2.findContours(connected_strokes, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            for cnt in contours:
-                area = cv2.contourArea(cnt)
-                if 800 < area < (h * w * 0.25):
-                    sx, sy, sw, sh = cv2.boundingRect(cnt)
-                    aspect = sw / float(max(1, sh))
-                    hull = cv2.convexHull(cnt)
-                    hull_area = cv2.contourArea(hull)
-                    solidity = float(area) / max(1.0, hull_area)
-                    
-                    # Cursive signatures: wide aspect ratio (>1.8) and low solidity (<0.6, lots of white space between loops)
-                    # Grayscale fingerprints: aspect ratio close to 1.0 (0.7-1.4) and high ridge solidity (>0.6)
-                    if (aspect > 1.8 and solidity < 0.6 and sw > 80) or (0.7 < aspect < 1.4 and solidity > 0.6 and sh > 60 and sw > 60):
-                        boxes_to_redact.append((sx, sy, sw, sh, "signature_biometric"))
-        except Exception as e_sig:
-            logging.debug(f"Signature detection skipped: {e_sig}")
+        # 3. HANDWRITTEN SIGNATURES (Level 4+) & GRAYSCALE THUMBPRINTS (Level 5)
+        if redaction_level >= 4:
+            try:
+                thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 8)
+                sig_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 5))
+                connected_strokes = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, sig_kernel)
+                
+                contours, _ = cv2.findContours(connected_strokes, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                for cnt in contours:
+                    area = cv2.contourArea(cnt)
+                    if 800 < area < (h * w * 0.25):
+                        sx, sy, sw, sh = cv2.boundingRect(cnt)
+                        aspect = sw / float(max(1, sh))
+                        hull = cv2.convexHull(cnt)
+                        hull_area = cv2.contourArea(hull)
+                        solidity = float(area) / max(1.0, hull_area)
+                        
+                        # Cursive signatures: wide aspect ratio (>1.8) and low solidity (<0.6) -> Level 4+
+                        if aspect > 1.8 and solidity < 0.6 and sw > 80:
+                            boxes_to_redact.append((sx, sy, sw, sh, "signature"))
+                        # Grayscale fingerprints: aspect ratio close to 1.0 (0.7-1.4) and high ridge solidity (>0.6) -> Level 5 only
+                        elif redaction_level >= 5 and (0.7 < aspect < 1.4 and solidity > 0.6 and sh > 60 and sw > 60):
+                            boxes_to_redact.append((sx, sy, sw, sh, "fingerprint"))
+            except Exception as e_sig:
+                logging.debug(f"Signature detection skipped: {e_sig}")
 
         # Apply irreversible de-identification to all visual PII regions
         for (bx, by, bw, bh, pii_type) in boxes_to_redact:
@@ -194,8 +205,8 @@ async def handle_pdf(file_data: bytes, filename: str, redaction_level: int, user
                 redacted_images.append(image)
                 continue
 
-            # Automatically de-identify human faces (blur by default)
-            image = redact_faces_in_image(image, method="blur")
+            # Automatically de-identify human faces and biometrics based on redaction level
+            image = redact_faces_in_image(image, method="blur", redaction_level=redaction_level)
 
             # SINGLE OCR CALL: get word bounding boxes and tokens in one pass
             draw = ImageDraw.Draw(image)
@@ -403,8 +414,8 @@ async def handle_image(file_data: bytes, filename: str, redaction_level: int, us
                 headers={"Content-Disposition": f"attachment; filename=redacted_{filename}"}
             )
 
-        # Automatically de-identify human faces (blur by default)
-        image = redact_faces_in_image(image, method="blur")
+        # Automatically de-identify human faces and biometrics based on redaction level
+        image = redact_faces_in_image(image, method="blur", redaction_level=redaction_level)
 
         draw = ImageDraw.Draw(image)
         tsv_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DATAFRAME)

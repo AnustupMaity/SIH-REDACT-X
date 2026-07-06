@@ -8,11 +8,11 @@ import { endpoints, getAuthHeaders } from '../lib/api';
 
 const LEVEL_DESCRIPTIONS = [
   { title: "Level 0: Pass-Through / Convert", desc: "No redaction applied. Converts document structure or image format cleanly.", badge: "Neutral", color: "text-slate-400" },
-  { title: "Level 1: Ultra-Fast Regex Rules", desc: "Instantly masks structured identifiers: Emails, Phone numbers, Dates, Credit Cards, Aadhaar & PAN.", badge: "Regex Fast", color: "text-blue-400" },
-  { title: "Level 2: Lightweight AI NER", desc: "Uses spaCy statistical NER model to identify names, locations, and organizations with low latency.", badge: "spaCy Small", color: "text-indigo-400" },
-  { title: "Level 3: Enhanced AI NER", desc: "High-precision multi-word entity detection using spaCy medium statistical NLP pipeline.", badge: "spaCy Medium", color: "text-blue-400" },
-  { title: "Level 4: Advanced Domain NER", desc: "Broad semantic masking using best-in-class spaCy domain-specific pipeline.", badge: "spaCy Best", color: "text-purple-400" },
-  { title: "Level 5: Deep Learning Transformer", desc: "State-of-the-art neural network (BERT / RoBERTa) fine-tuned on complex Indian & Global PII datasets.", badge: "BERT / RoBERTa AI", color: "text-red-400 font-bold" },
+  { title: "Level 1: Ultra-Fast Regex Rules", desc: "Instantly masks structured text (Emails, PAN, Aadhaar) across all documents via fast OCR.", badge: "Regex Fast", color: "text-blue-400" },
+  { title: "Level 2: Lightweight AI NER", desc: "Uses spaCy NER to identify names, locations, and organizations with low latency across all documents.", badge: "spaCy Small", color: "text-indigo-400" },
+  { title: "Level 3: Enhanced AI NER + Faces", desc: "High-precision entity detection via spaCy medium NLP. For PDFs & Images: automatically detects and blurs Human Faces.", badge: "spaCy Medium + Faces", color: "text-blue-400" },
+  { title: "Level 4: Advanced Domain NER + Signatures", desc: "Broad semantic masking using spaCy domain pipeline. For PDFs & Images: blurs Human Faces and Handwritten Signatures.", badge: "spaCy Best + Signatures", color: "text-purple-400" },
+  { title: "Level 5: Maximum Deep Learning + Biometrics", desc: "RoBERTa transformers for text/data files. For PDFs & Images: Total Biometric Redaction (Faces, Signatures, Stamps & Fingerprints).", badge: "Total Biometric AI", color: "text-red-400 font-bold" },
 ];
 
 export function PDFRedaction() {
