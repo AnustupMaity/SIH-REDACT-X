@@ -127,6 +127,25 @@ SIH-REDACT-X/
 
 ---
 
+## 🌐 Cloud Deployment & Permanent Storage
+
+`RE-DACT` is designed for dual-mode persistence, seamlessly routing database queries depending on whether it is running locally on your computer or deployed to the cloud:
+
+| Environment | App Hosting | Database Hosting | Permanence & Behavior |
+| :--- | :--- | :--- | :--- |
+| **Local PC / Electron** | Localhost / OS Native | **Local SQLite** (`form_data.db`) | **100% Permanent.** Stored directly on your hard drive; user accounts and history never disappear unless manually deleted. |
+| **Cloud Live Demo** | **Hugging Face Spaces** (Docker) | **Turso Cloud LibSQL** or **`/data` Volume** | **100% Permanent.** When configured with Turso or a persistent volume, cloud container restarts or rebuilds will never wipe user data. |
+
+### Connecting Turso Cloud Database (Free Permanent Storage):
+To make your Hugging Face Space database permanent without paying for storage:
+1. Create a free database at [**Turso**](https://turso.tech) (9 GB free forever LibSQL SQLite storage).
+2. In your Hugging Face Space settings (**Settings -> Repository Secrets / Variables**), add two environment variables:
+   * `TURSO_DATABASE_URL`: `libsql://your-database.turso.io`
+   * `TURSO_AUTH_TOKEN`: `ey...` (Your Turso auth token)
+3. The app will automatically detect Turso and route all user registrations, logins, and redaction history directly to permanent cloud storage!
+
+---
+
 ## ⚡ Quick Start & Deployment
 
 ### Prerequisites

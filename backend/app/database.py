@@ -4,8 +4,25 @@ import aiosqlite
 import logging
 from typing import List, Dict, Any, Optional
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATABASE_PATH = os.path.join(BASE_DIR, "form_data.db")
+
+# Turso Cloud Database Configuration (for free permanent cloud storage on Hugging Face Spaces)
+TURSO_URL = os.environ.get("TURSO_DATABASE_URL")
+TURSO_TOKEN = os.environ.get("TURSO_AUTH_TOKEN", "")
+
+# On Hugging Face Spaces or cloud Docker deployments without Turso, use persistent volume /data if available
+if os.path.exists("/data") and os.access("/data", os.W_OK):
+    DATABASE_PATH = "/data/form_data.db"
+elif os.environ.get("DATABASE_PATH"):
+    DATABASE_PATH = os.environ.get("DATABASE_PATH")
+else:
+    DATABASE_PATH = os.path.join(BASE_DIR, "form_data.db")
 
 async def get_db_connection() -> aiosqlite.Connection:
     """
@@ -17,8 +34,40 @@ async def get_db_connection() -> aiosqlite.Connection:
 
 async def init_db():
     """
-    Initialize SQLite database tables asynchronously and perform necessary schema migrations.
+    Initialize database tables asynchronously (Turso LibSQL or Local SQLite).
     """
+    if TURSO_URL:
+        try:
+            import libsql_client
+            async with libsql_client.create_client(url=TURSO_URL, auth_token=TURSO_TOKEN) as client:
+                await client.execute('''
+                    CREATE TABLE IF NOT EXISTS users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        first_name TEXT NOT NULL,
+                        last_name TEXT NOT NULL,
+                        username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        security_question TEXT NOT NULL,
+                        security_answer TEXT NOT NULL
+                    )
+                ''')
+                await client.execute('''
+                    CREATE TABLE IF NOT EXISTS history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER,
+                        filename TEXT NOT NULL,
+                        operation_type TEXT NOT NULL,
+                        redaction_level INTEGER NOT NULL,
+                        status TEXT NOT NULL,
+                        timestamp TEXT NOT NULL,
+                        details TEXT
+                    )
+                ''')
+            logging.info("Turso Cloud LibSQL database initialized successfully.")
+            return
+        except Exception as e:
+            logging.error(f"Failed to initialize Turso database: {e}. Falling back to local SQLite.")
+
     async with aiosqlite.connect(DATABASE_PATH) as conn:
         # Create users table without confirm_password column
         await conn.execute('''
@@ -62,13 +111,23 @@ async def init_db():
         ''')
 
         await conn.commit()
-    logging.info("Database initialized asynchronously.")
+    logging.info("Local SQLite database initialized asynchronously.")
 
 async def execute_query(query: str, params: tuple = ()) -> int:
     """
     Execute an INSERT, UPDATE, or DELETE query asynchronously.
     Returns lastrowid for INSERTs or rowcount.
     """
+    if TURSO_URL:
+        try:
+            import libsql_client
+            async with libsql_client.create_client(url=TURSO_URL, auth_token=TURSO_TOKEN) as client:
+                rs = await client.execute(query, list(params))
+                return rs.last_insert_rowid if rs.last_insert_rowid is not None else rs.rows_affected
+        except Exception as e:
+            logging.error(f"Turso execute_query error: {e}")
+            raise e
+
     async with aiosqlite.connect(DATABASE_PATH) as conn:
         cursor = await conn.execute(query, params)
         await conn.commit()
@@ -78,6 +137,16 @@ async def fetch_one(query: str, params: tuple = ()) -> Optional[Dict[str, Any]]:
     """
     Fetch a single row as a dictionary asynchronously.
     """
+    if TURSO_URL:
+        try:
+            import libsql_client
+            async with libsql_client.create_client(url=TURSO_URL, auth_token=TURSO_TOKEN) as client:
+                rs = await client.execute(query, list(params))
+                return dict(rs.rows[0]) if rs.rows else None
+        except Exception as e:
+            logging.error(f"Turso fetch_one error: {e}")
+            raise e
+
     async with aiosqlite.connect(DATABASE_PATH) as conn:
         conn.row_factory = aiosqlite.Row
         cursor = await conn.execute(query, params)
@@ -88,6 +157,16 @@ async def fetch_all(query: str, params: tuple = ()) -> List[Dict[str, Any]]:
     """
     Fetch multiple rows as a list of dictionaries asynchronously.
     """
+    if TURSO_URL:
+        try:
+            import libsql_client
+            async with libsql_client.create_client(url=TURSO_URL, auth_token=TURSO_TOKEN) as client:
+                rs = await client.execute(query, list(params))
+                return [dict(row) for row in rs.rows]
+        except Exception as e:
+            logging.error(f"Turso fetch_all error: {e}")
+            raise e
+
     async with aiosqlite.connect(DATABASE_PATH) as conn:
         conn.row_factory = aiosqlite.Row
         cursor = await conn.execute(query, params)
