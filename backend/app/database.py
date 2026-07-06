@@ -13,8 +13,16 @@ except ImportError:
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Turso Cloud Database Configuration (for free permanent cloud storage on Hugging Face Spaces)
-TURSO_URL = os.environ.get("TURSO_DATABASE_URL")
-TURSO_TOKEN = os.environ.get("TURSO_AUTH_TOKEN", "")
+_raw_turso_url = os.environ.get("TURSO_DATABASE_URL", "").strip()
+# Convert libsql:// or wss:// to https:// for 100% reliable HTTP JSON execution without WebSocket firewall/400 errors
+if _raw_turso_url.startswith("libsql://"):
+    TURSO_URL = "https://" + _raw_turso_url[9:]
+elif _raw_turso_url.startswith("wss://"):
+    TURSO_URL = "https://" + _raw_turso_url[6:]
+else:
+    TURSO_URL = _raw_turso_url if _raw_turso_url else None
+
+TURSO_TOKEN = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
 
 # On Hugging Face Spaces or cloud Docker deployments without Turso, use persistent volume /data if available
 if os.path.exists("/data") and os.access("/data", os.W_OK):
