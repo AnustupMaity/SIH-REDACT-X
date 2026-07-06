@@ -12,16 +12,33 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Push to Hugging Face Space
+      - name: Deploy to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
 
-          git remote add hf https://ANUSTUP55:${HF_TOKEN}@huggingface.co/spaces/ANUSTUP55/RedactX
+          mkdir deploy
 
-          git push hf master:main --force
+          rsync -av \
+            --exclude=".git" \
+            --exclude=".github" \
+            ./ deploy/
+
+          cd deploy
+
+          git init
+          git checkout -b main
+
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
+          git remote add origin https://oauth2:${HF_TOKEN}@huggingface.co/spaces/ANUSTUP55/RedactX
+
+          git add .
+
+          git commit -m "Deploy from GitHub"
+
+          git push origin main --force
