@@ -184,3 +184,18 @@ def redact_entities_transformer(text: str, mask_char: str = "x") -> str:
     except Exception as e:
         logging.error(f"Error in transformer redaction: {e}")
         return redact_entities_spacy(text, level=1)
+
+def preload_fallback_model():
+    """
+    Pre-download / cache the fallback cloud model at startup so there is zero download wait time during fallback.
+    """
+    try:
+        from transformers import pipeline
+        logging.info(f"Pre-downloading/caching fallback Transformer model '{FALLBACK_TRANSFORMER_MODEL}' at startup...")
+        try:
+            pipeline("ner", model=FALLBACK_TRANSFORMER_MODEL, aggregation_strategy="simple")
+        except TypeError:
+            pipeline("ner", model=FALLBACK_TRANSFORMER_MODEL, grouped_entities=True)
+        logging.info("Fallback Transformer model successfully pre-cached at startup!")
+    except Exception as e:
+        logging.warning(f"Could not pre-cache fallback transformer model at startup: {e}")

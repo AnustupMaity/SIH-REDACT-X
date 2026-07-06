@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y \
 COPY backend/requirements.txt ./backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
+# Pre-download fallback model so there is zero download wait time during fallback
+RUN python -c "from transformers import pipeline; pipeline('ner', model='dslim/distilbert-NER')"
+
 # Copy backend code and training/model assets
 COPY backend/ ./backend/
 

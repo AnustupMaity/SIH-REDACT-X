@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 
 from app.database import init_db
 from app.routers import auth, redact, feedback, history, health
-from app.services.ner_engine import get_spacy_model
+from app.services.ner_engine import get_spacy_model, preload_fallback_model
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,6 +29,7 @@ async def lifespan(app: FastAPI):
     try:
         logger.info("Pre-warming NLP models...")
         get_spacy_model(level=1)
+        preload_fallback_model()
     except Exception as e:
         logger.warning(f"Model pre-warm warning: {e}")
         
