@@ -56,6 +56,16 @@ def get_spacy_model(level: int = 1):
     fallback = "en_core_web_sm" if level == 1 else ("en_core_web_md" if level == 2 else "en_core_web_lg")
     
     try:
+        if not os.path.exists(path):
+            spacy_repo = os.environ.get("NER_SPACY_REPO")
+            if spacy_repo:
+                try:
+                    from huggingface_hub import snapshot_download
+                    logging.info(f"Downloading custom spaCy models from HuggingFace repo {spacy_repo}...")
+                    snapshot_download(repo_id=spacy_repo, local_dir=MODEL_DIR)
+                except Exception as e:
+                    logging.warning(f"Failed to download spaCy repo {spacy_repo}: {e}")
+
         if os.path.exists(path):
             logging.info(f"Lazy loading spaCy model from {path}...")
             _spacy_models_cache[level] = spacy.load(path)
