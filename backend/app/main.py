@@ -7,7 +7,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.database import init_db
 from app.routers import auth, redact, feedback, history, health
@@ -93,6 +94,25 @@ app.include_router(feedback.router)
 app.include_router(history.router)
 app.include_router(health.router)
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Redact API v2.0"}
+# Serve built React frontend if available (Docker production deployment)
+frontend_dist_1 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist-react")
+frontend_dist_2 = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "dist-react")
+frontend_dist = frontend_dist_1 if os.path.exists(frontend_dist_1) else frontend_dist_2
+
+if os.path.exists(frontend_dist):
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+        
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        if full_path.startswith("api/") or full_path in ["health", "metrics", "docs", "openapi.json"]:
+            return JSONResponse(status_code=404, content={"detail": "Not found"})
+        file_path = os.path.join(frontend_dist, full_path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+else:
+    @app.get("/")
+    def read_root():
+        return {"message": "Welcome to the Redact API v2.0"}
