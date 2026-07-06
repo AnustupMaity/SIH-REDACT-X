@@ -150,7 +150,7 @@ async def fetch_one(query: str, params: tuple = ()) -> Optional[Dict[str, Any]]:
             import libsql_client
             async with libsql_client.create_client(url=TURSO_URL, auth_token=TURSO_TOKEN) as client:
                 rs = await client.execute(query, list(params))
-                return dict(rs.rows[0]) if rs.rows else None
+                return dict(zip(rs.columns, rs.rows[0])) if rs.rows else None
         except Exception as e:
             logging.error(f"Turso fetch_one error: {e}")
             raise e
@@ -170,7 +170,7 @@ async def fetch_all(query: str, params: tuple = ()) -> List[Dict[str, Any]]:
             import libsql_client
             async with libsql_client.create_client(url=TURSO_URL, auth_token=TURSO_TOKEN) as client:
                 rs = await client.execute(query, list(params))
-                return [dict(row) for row in rs.rows]
+                return [dict(zip(rs.columns, row)) for row in rs.rows]
         except Exception as e:
             logging.error(f"Turso fetch_all error: {e}")
             raise e
